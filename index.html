@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vet & Estética - Turnos Online</title>
+  <link rel="stylesheet" href="css/index.css" />
+</head>
+<body>
+  <header class="site-header" id="top">
+    <div class="container header-row">
+      <a class="brand" href="#top" aria-label="Ir al inicio">
+        <!-- <span class="brand-dot" aria-hidden="true"></span> -->
+        <img src="img/logo.png" alt="logo" class="logo">
+        <span>Huellas</span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+        ☰
+      </button>
+
+      <nav class="nav" id="nav">
+        <a href="#galeria">Galería</a>
+        <a href="#profesionales">Profesionales</a>
+        <a href="#reservar">Reservar</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO / CARRUSEL -->
+    <section class="section" id="galeria" aria-label="Carrusel de imágenes">
+      <div class="container">
+        <div class="section-head">
+          <h1>Turnos online para Veterinaria y Estética</h1>
+          <p class="muted">Reservá tu turno en minutos. Atención a perros y gatos.</p>
+        </div>
+
+        <div class="carousel" aria-roledescription="carrusel">
+          <div class="carousel-track" id="carouselTrack">
+            <!-- Slides inyectados por JS -->
+          </div>
+
+          <button class="carousel-btn prev" id="carouselPrev" aria-label="Anterior">‹</button>
+          <button class="carousel-btn next" id="carouselNext" aria-label="Siguiente">›</button>
+
+          <div class="carousel-dots" id="carouselDots" aria-label="Indicadores"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFESIONALES -->
+    <section class="section" id="profesionales" aria-label="Profesionales" style="padding: 0;">
+      <div class="container">
+        <div class="section-head">
+          <h2>Nuestro equipo</h2>
+          <p class="muted">6 profesionales fijos: 3 veterinarios y 3 de estética.</p>
+        </div>
+
+        <div class="filters">
+          <button class="chip is-active" data-filter="all" type="button">Todos</button>
+          <button class="chip" data-filter="vet" type="button">Veterinaria</button>
+          <button class="chip" data-filter="groom" type="button">Estética/Baño</button>
+        </div>
+
+        <div class="grid" id="proGrid">
+          <!-- Cards inyectadas por JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- FORM RESERVA -->
+    <section class="section" id="reservar" aria-label="Reservar turno">
+      <div class="container">
+        <div class="section-head">
+          <h2>Reservar turno</h2>
+          <p class="muted">Completá los datos y elegí profesional y horario.</p>
+        </div>
+
+        <div class="layout-2col">
+          <form class="card form" id="bookingForm" novalidate>
+            <div class="form-row">
+              <label>
+                Nombre del dueño *
+                <input type="text" name="ownerName" autocomplete="name" required />
+              </label>
+              <label>
+                Nombre de la mascota *
+                <input type="text" name="petName" required />
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label>
+                Tipo de mascota *
+                <select name="petType" required>
+                  <option value="">Seleccionar…</option>
+                  <option value="Perro">Perro</option>
+                  <option value="Gato">Gato</option>
+                </select>
+              </label>
+
+              <label>
+                Servicio *
+                <select name="service" id="serviceSelect" required>
+                  <option value="">Seleccionar…</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label>
+                Tipo de profesional *
+                <select name="proType" id="proTypeSelect" required>
+                  <option value="">Seleccionar…</option>
+                  <option value="vet">Veterinario</option>
+                  <option value="groom">Estética/Baño</option>
+                </select>
+              </label>
+
+              <label>
+                Profesional *
+                <select name="proId" id="proSelect" required>
+                  <option value="">Seleccionar…</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label>
+                Fecha *
+                <input type="date" name="date" id="dateInput" required />
+              </label>
+              <label>
+                Hora *
+                <input type="time" name="time" id="timeInput" step="1800" required />
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label>
+                Teléfono *
+                <input type="tel" name="phone" placeholder="099 123 456" required />
+              </label>
+              <label>
+                Email
+                <input type="email" name="email" autocomplete="email" placeholder="tucorreo@mail.com" />
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn" type="submit">Confirmar reserva</button>
+              <p class="form-hint muted" id="formHint" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+
+          <aside class="card side">
+
+            <article>
+            <h3>Servicios</h3>
+            <ul class="bullets">
+              <li>Consulta veterinaria <strong>$500</strong> (+ insumos si aplica)</li>
+              <li>Estética completa <strong>$1800</strong> (lavado, secado, corte, uñas)</li>
+            </ul>
+          </article>
+
+          <div style="height: 20px;"></div>
+
+          <article>
+            <h3>Horarios</h3>
+            <ul class="bullets">
+              <li>Lun a Vie: 09:00–18:00</li>
+              <li>Sáb: 09:00–12:30</li>
+              <li>Domingo: Cerrado</li>
+            </ul>
+          </article>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="contacto">
+    <div class="container footer-grid">
+      <div class="footer-card">
+        <h3>Contacto</h3>
+        <p><strong>Tel:</strong> 2400 0000</p>
+        <p><strong>Email:</strong> hola@vetestetica.com</p>
+        <p class="muted"><strong>Horario:</strong> Lun–Vie 09:00–18:00 · Sáb 09:00–12:30</p>
+      </div>
+
+      <div class="footer-card">
+        <h3>Ubicación</h3>
+        <div class="map-wrap">
+          <iframe
+            title="Mapa"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=Montevideo%20Uruguay&output=embed">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <small class="muted">© <span id="year"></span> Huellas · Vet & Estética</small>
+    </div>
+  </footer>
+  <script src="js/index.js"></script>
+</body>
+</html>

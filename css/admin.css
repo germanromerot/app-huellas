@@ -1,0 +1,276 @@
+/* ==========================================================================
+  admin.css — Estilos propios del administrador
+  Depende de variables + utilidades de index.css
+========================================================================== */
+body{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+}
+.admin-header .header-row{
+  gap: 14px;
+}
+.admin-topbar-actions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+/* Main layout */
+.admin-main{
+  padding: 38px 0 64px;
+}
+
+/* Login */
+.admin-login{
+  max-width: 520px;
+  margin: 24px auto 0;
+  padding: 22px;
+}
+
+.admin-login-head h1{
+  margin: 0 0 6px;
+}
+.admin-login-head p{
+  margin: 0;
+}
+
+.admin-login-form{
+  margin-top: 14px;
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-login-form label{
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.admin-login-actions{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.admin-msg{
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.admin-tip{
+  margin: 6px 0 0;
+}
+
+/* Panel head */
+.admin-panel{
+  margin-top: 18px;
+}
+
+.admin-panel-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-panel-head h2{
+  margin: 0 0 6px;
+}
+
+.admin-tools{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Summary */
+.admin-summary{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-item{
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.summary-item strong{
+  font-size: 22px;
+}
+
+/* List container */
+.admin-list{
+  padding: 16px;
+}
+
+.admin-list-head{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-list-title{
+  margin: 0;
+}
+
+.admin-filters{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex-wrap: wrap;
+}
+
+.admin-filters select,
+.admin-filters input[type="search"]{
+  border: 1px solid rgba(31,34,48,.15);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.88);
+  outline: none;
+  min-height: 42px;
+}
+
+.admin-filters input[type="search"]{
+  width: min(340px, 55vw);
+}
+
+/* Reservations list */
+.reservations{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reservation{
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 14px 40px rgba(31,34,48,.08);
+  padding: 14px;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.reservation-main{
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reservation-top{
+  display:flex;
+  align-items:center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(31,34,48,.12);
+  background: rgba(255,255,255,.85);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .2px;
+}
+
+.badge.vet{
+  background: linear-gradient(135deg, rgba(223,231,255,.9), rgba(217,242,238,.7));
+}
+.badge.groom{
+  background: linear-gradient(135deg, rgba(246,214,230,.9), rgba(255,242,204,.7));
+}
+
+.reservation-title{
+  margin: 0;
+  font-size: 16px;
+}
+
+.reservation-meta{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.meta-item{
+  display:flex;
+  gap: 8px;
+  align-items:center;
+}
+
+.meta-item strong{
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.reservation-actions{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap: 10px;
+}
+
+.btn-danger{
+  border: 1px solid rgba(139,30,63,.20);
+  background: rgba(246,214,230,.55);
+  font-weight: 900;
+}
+.btn-danger:hover{
+  filter: brightness(.98);
+}
+
+/* Empty state */
+.admin-empty{
+  margin: 12px 0 0;
+  text-align:center;
+}
+
+/* Footer */
+.admin-footer{
+  background: rgba(255,255,255,.35);
+}
+
+/* Hide/show helpers used by admin.js */
+.is-hidden{ display:none !important; }
+
+/* Responsive */
+@media (max-width: 900px){
+  .admin-panel-head{
+    align-items:flex-start;
+    flex-direction: column;
+  }
+  .admin-summary{
+    grid-template-columns: 1fr;
+  }
+  .reservation{
+    grid-template-columns: 1fr;
+  }
+  .reservation-actions{
+    justify-content:flex-start;
+  }
+  .reservation-meta{
+    grid-template-columns: 1fr;
+  }
+}

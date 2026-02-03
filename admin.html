@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin · Vet & Estética</title>
+
+  <!-- Base compartida (tu index.css) -->
+  <link rel="stylesheet" href="css/index.css" />
+  <!-- Estilos propios del admin -->
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body>
+  <header class="site-header admin-header">
+    <div class="container header-row">
+      <a class="brand" href="#top" aria-label="Ir al inicio">
+        <!-- <span class="brand-dot" aria-hidden="true"></span> -->
+        <img src="img/logo.png" alt="logo" class="logo">
+        <span>Huellas</span>
+      </a>
+
+      <nav class="admin-topbar-actions" aria-label="Acciones de administrador">
+        <a class="btn btn-ghost" href="index.html">← Inicio</a>
+        <button class="btn" id="logoutBtn" type="button">Cerrar sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="container">
+
+      <!-- LOGIN (se muestra si NO hay sesión) -->
+      <section class="admin-login card" id="loginSection" aria-label="Iniciar sesión administrador">
+        <div class="admin-login-head">
+          <h1>Administrador</h1>
+          <p class="muted">Ingresá con tu usuario para ver y gestionar reservas.</p>
+        </div>
+
+        <form class="admin-login-form" id="adminLoginForm" novalidate>
+          <label>
+            Usuario
+            <input type="text" name="username" autocomplete="username" required />
+          </label>
+
+          <label>
+            Contraseña
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+
+          <div class="admin-login-actions">
+            <button class="btn" type="submit">Ingresar</button>
+            <p class="admin-msg" id="loginMsg" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </section>
+
+      <!-- PANEL (se muestra si hay sesión) -->
+      <section class="admin-panel" id="panelSection" aria-label="Panel de reservas">
+        <div class="admin-panel-head">
+          <div>
+            <h2>Reservas</h2>
+            <p class="muted">Ordenadas por fecha y hora. Cada turno dura 30 minutos.</p>
+          </div>
+
+          <div class="admin-tools">
+            <button class="btn btn-ghost" id="seedBtn" type="button" title="Cargar ejemplos si no hay reservas">
+              Cargar ejemplos
+            </button>
+            <button class="btn btn-ghost" id="clearBtn" type="button" title="Borrar todas las reservas">
+              Borrar todo
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-summary card">
+          <div class="summary-item">
+            <span class="muted tiny">Total reservas</span>
+            <strong id="countTotal">0</strong>
+          </div>
+          <div class="summary-item">
+            <span class="muted tiny">Veterinaria</span>
+            <strong id="countVet">0</strong>
+          </div>
+          <div class="summary-item">
+            <span class="muted tiny">Estética</span>
+            <strong id="countGroom">0</strong>
+          </div>
+        </div>
+
+        <div class="admin-list card">
+          <div class="admin-list-head">
+            <h3 class="admin-list-title">Listado</h3>
+            <div class="admin-filters">
+              <select id="typeFilter" aria-label="Filtrar por tipo">
+                <option value="all">Todos</option>
+                <option value="vet">Veterinaria</option>
+                <option value="groom">Estética/Baño</option>
+              </select>
+
+              <input
+                type="search"
+                id="searchInput"
+                placeholder="Buscar por dueño, mascota o profesional…"
+                aria-label="Buscar"
+              />
+            </div>
+          </div>
+
+          <ul class="reservations" id="reservationsList" aria-label="Reservas">
+            <!-- Items inyectados por admin.js -->
+          </ul>
+
+          <p class="muted admin-empty" id="emptyState" hidden>
+            No hay reservas aún. Podés crear una desde la página de inicio.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer admin-footer">
+    <div class="container footer-bottom">
+      <small class="muted">© <span id="year"></span> Huellas · Vet & Estética · Panel Administrador</small>
+    </div>
+  </footer>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
