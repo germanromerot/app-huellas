@@ -51,21 +51,57 @@
   // Slides “sin imágenes reales” (uso gradientes, podés cambiar por <img> si querés)
   const SLIDES = [
     {
-      title: "Estética con cariño",
-      text: "Cortes, baño y uñas en un entorno seguro y tranquilo.",
-      bg: "url(img/slider-1.jpg)",
+      title: "Baño",
+      text: "Baño para nuestro cliente Amadeo.",
+      bg: "url(img/slider-4.jpg)",
       //bg: "linear-gradient(135deg, var(--p4), var(--p1))",
     },
     {
-      title: "Veterinaria de confianza",
-      text: "Consulta veterinaria para perros y gatos.",
-      bg: "url(img/slider-2.jpg)",
+      title: "Veterinaria",
+      text: "Sedacion para nuestro cliente Toby.",
+      bg: "url(img/slider-5.jpg)",
       //bg: "linear-gradient(135deg, var(--p2), var(--p3))",
     },
     {
-      title: "Turnos online en 1 minuto",
-      text: "Elegí profesional, fecha y hora. Confirmación inmediata.",
-      bg: "url(img/slider-3.jpg)",
+      title: "Consulta",
+      text: "Consulta para nuestro cliente Rocky.",
+      bg: "url(img/slider-6.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Baño",
+      text: "Baño para nuestro cliente Pepe.",
+      bg: "url(img/slider-7.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Consulta",
+      text: "Consulta para nuestro cliente Ambar.",
+      bg: "url(img/slider-8.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Consulta",
+      text: "Consulta para nuestro cliente Nina.",
+      bg: "url(img/slider-9.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Baño",
+      text: "Baño para nuestro cliente Cleopatra.",
+      bg: "url(img/slider-10.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Corte de uñas",
+      text: "Corte de uñas para nuestro cliente Pipe.",
+      bg: "url(img/slider-11.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Veterinaria",
+      text: "Sedacion para nuestro cliente Tito.",
+      bg: "url(img/slider-12.jpg)",
       //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
     },
   ];
@@ -701,4 +737,6 @@
     // Si después agregás login modal, ya queda listo:
     initOptionalLogin();
   });
+
 })();
+ 
