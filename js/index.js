@@ -701,4 +701,6 @@
     // Si después agregás login modal, ya queda listo:
     initOptionalLogin();
   });
+
 })();
+ 
