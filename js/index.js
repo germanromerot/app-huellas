@@ -53,21 +53,57 @@
   // Slides “sin imágenes reales” (uso gradientes, podés cambiar por <img> si querés)
   const SLIDES = [
     {
-      title: "Estética con cariño",
-      text: "Cortes, baño y uñas en un entorno seguro y tranquilo.",
-      bg: "url(img/slider-1.jpg)",
+      title: "Baño",
+      text: "Baño para nuestro cliente Amadeo.",
+      bg: "url(img/slider-4.jpg)",
       //bg: "linear-gradient(135deg, var(--p4), var(--p1))",
     },
     {
-      title: "Veterinaria de confianza",
-      text: "Consulta veterinaria para perros y gatos.",
-      bg: "url(img/slider-2.jpg)",
+      title: "Veterinaria",
+      text: "Sedacion para nuestro cliente Toby.",
+      bg: "url(img/slider-5.jpg)",
       //bg: "linear-gradient(135deg, var(--p2), var(--p3))",
     },
     {
-      title: "Turnos online en 1 minuto",
-      text: "Elegí profesional, fecha y hora. Confirmación inmediata.",
-      bg: "url(img/slider-3.jpg)",
+      title: "Consulta",
+      text: "Consulta para nuestro cliente Rocky.",
+      bg: "url(img/slider-6.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Baño",
+      text: "Baño para nuestro cliente Pepe.",
+      bg: "url(img/slider-7.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Consulta",
+      text: "Consulta para nuestro cliente Ambar.",
+      bg: "url(img/slider-8.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Consulta",
+      text: "Consulta para nuestro cliente Nina.",
+      bg: "url(img/slider-9.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Baño",
+      text: "Baño para nuestro cliente Cleopatra.",
+      bg: "url(img/slider-10.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Corte de uñas",
+      text: "Corte de uñas para nuestro cliente Pipe.",
+      bg: "url(img/slider-11.jpg)",
+      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
+    },
+    {
+      title: "Veterinaria",
+      text: "Sedacion para nuestro cliente Tito.",
+      bg: "url(img/slider-12.jpg)",
       //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
     },
   ];
@@ -191,6 +227,7 @@
         proName: PROFESSIONALS.find((p) => p.id === "groom-1").name,
         phone: "099 111 222",
         email: "ana@mail.com",
+        status: "active",
         startISO: toISOKey(new Date(d1.getFullYear(), d1.getMonth(), d1.getDate(), 10, 0)),
         createdAt: Date.now(),
       },
@@ -206,6 +243,7 @@
         proName: PROFESSIONALS.find((p) => p.id === "vet-2").name,
         phone: "098 333 444",
         email: "",
+        status: "active",
         startISO: toISOKey(new Date(d1.getFullYear(), d1.getMonth(), d1.getDate(), 11, 30)),
         createdAt: Date.now(),
       },
@@ -221,6 +259,7 @@
         proName: PROFESSIONALS.find((p) => p.id === "vet-1").name,
         phone: "097 222 555",
         email: "carla@mail.com",
+        status: "active",
         startISO: toISOKey(new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 9, 0)),
         createdAt: Date.now(),
       },
@@ -236,6 +275,7 @@
         proName: PROFESSIONALS.find((p) => p.id === "groom-2").name,
         phone: "096 555 666",
         email: "",
+        status: "active",
         startISO: toISOKey(new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 15, 0)),
         createdAt: Date.now(),
       },
@@ -251,6 +291,7 @@
         proName: PROFESSIONALS.find((p) => p.id === "groom-3").name,
         phone: "091 000 999",
         email: "elena@mail.com",
+        status: "active",
         startISO: toISOKey(new Date(d3.getFullYear(), d3.getMonth(), d3.getDate(), 12, 0)),
         createdAt: Date.now(),
       },
@@ -266,6 +307,7 @@
         proName: PROFESSIONALS.find((p) => p.id === "vet-3").name,
         phone: "095 222 111",
         email: "",
+        status: "active",
         startISO: toISOKey(new Date(d3.getFullYear(), d3.getMonth(), d3.getDate(), 16, 30)),
         createdAt: Date.now(),
       },
@@ -669,6 +711,7 @@
         email,
         startISO: toISOKey(start),
         createdAt: Date.now(),
+        status: "active",
       };
 
       const existing = loadReservations();
@@ -799,4 +842,6 @@
     // Si después agregás login modal, ya queda listo:
     initOptionalLogin();
   });
+
 })();
+ 

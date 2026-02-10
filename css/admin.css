@@ -274,3 +274,47 @@ body{
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================
+   Estados de reserva
+   (Activa / Cancelada)
+========================= */
+
+.badge.active{
+  background: rgba(217,242,238,.85);
+  border: 1px solid rgba(31,34,48,.12);
+}
+
+.badge.cancelled{
+  background: rgba(0,0,0,.06);
+  border: 1px solid rgba(31,34,48,.12);
+  color: var(--muted);
+}
+
+/* Reserva cancelada: opaca + sin "feeling" de clic */
+.reservation.is-cancelled{
+  opacity: .65;
+}
+
+/* Botón cancelar (cuando está activo) */
+.btn-warning{
+  border: 1px solid rgba(31,34,48,.12);
+  background: rgba(255,242,204,.75);
+  font-weight: 900;
+}
+.btn-warning:hover{
+  filter: brightness(.98);
+}
+
+/* Botón deshabilitado (cancelada) */
+.btn-disabled{
+  border: 1px solid rgba(31,34,48,.10);
+  background: rgba(255,255,255,.55);
+  color: var(--muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-disabled:hover{
+  filter: none;
+}
+
