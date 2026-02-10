@@ -78,16 +78,64 @@
           <p class="muted">Completá los datos y elegí profesional y horario.</p>
         </div>
 
-        <div class="layout-2col">
+        <div class="layout-2col" style="margin-top: 30px;">
           <form class="card form" id="bookingForm" novalidate>
+
+            <fieldset class="form-fieldset">
+              <legend>Datos de reserva</legend>
+
+              <div class="form-row">
+  
+                <label>
+                  Servicio *
+                  <select name="service" id="serviceSelect" required>
+                    <option value="">Seleccionar…</option>
+                  </select>
+                </label>
+  
+                <label>
+                  Profesional *
+                  <select name="proId" id="proSelect" required>
+                    <option value="">Seleccionar…</option>
+                  </select>
+                </label>
+              </div>
+  
+              <div class="form-row">
+                <label>
+                  Fecha *
+                  <input type="date" name="date" id="dateInput" required />
+                </label>
+                <label>
+                  Hora *
+                  <select name="time" id="timeInput" required>
+                    <option value="">Seleccionar…</option>
+                  </select>
+                </label>
+              </div>
+            </fieldset>
+            
+            <fieldset class="form-fieldset">
+              <legend>Datos personales</legend>
+              <div class="form-row">
+                <label>
+                  Nombre del dueño *
+                  <input type="text" name="ownerName" autocomplete="name" required />
+                </label>
+                <label>
+                  Nombre de la mascota *
+                  <input type="text" name="petName" required />
+                </label>
+              </div>
+
             <div class="form-row">
               <label>
-                Nombre del dueño *
-                <input type="text" name="ownerName" autocomplete="name" required />
+                Teléfono *
+                <input type="tel" name="phone" placeholder="099 123 456" required />
               </label>
               <label>
-                Nombre de la mascota *
-                <input type="text" name="petName" required />
+                Email
+                <input type="email" name="email" autocomplete="email" placeholder="tucorreo@mail.com" />
               </label>
             </div>
 
@@ -100,54 +148,9 @@
                   <option value="Gato">Gato</option>
                 </select>
               </label>
-
-              <label>
-                Servicio *
-                <select name="service" id="serviceSelect" required>
-                  <option value="">Seleccionar…</option>
-                </select>
-              </label>
             </div>
 
-            <div class="form-row">
-              <label>
-                Tipo de profesional *
-                <select name="proType" id="proTypeSelect" required>
-                  <option value="">Seleccionar…</option>
-                  <option value="vet">Veterinario</option>
-                  <option value="groom">Estética/Baño</option>
-                </select>
-              </label>
-
-              <label>
-                Profesional *
-                <select name="proId" id="proSelect" required>
-                  <option value="">Seleccionar…</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="form-row">
-              <label>
-                Fecha *
-                <input type="date" name="date" id="dateInput" required />
-              </label>
-              <label>
-                Hora *
-                <input type="time" name="time" id="timeInput" step="1800" required />
-              </label>
-            </div>
-
-            <div class="form-row">
-              <label>
-                Teléfono *
-                <input type="tel" name="phone" placeholder="099 123 456" required />
-              </label>
-              <label>
-                Email
-                <input type="email" name="email" autocomplete="email" placeholder="tucorreo@mail.com" />
-              </label>
-            </div>
+            </fieldset>
 
             <div class="form-actions">
               <button class="btn" type="submit">Confirmar reserva</button>
@@ -207,6 +210,21 @@
       <small class="muted">© <span id="year"></span> Huellas · Vet & Estética</small>
     </div>
   </footer>
+  <div class="modal" id="successModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Reserva confirmada ✅</h3>
+        <button class="icon-btn" type="button" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="successMessage"></p>
+        <div class="modal-actions">
+          <button class="btn" type="button" data-close>Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="js/index.js"></script>
 </body>
 </html>

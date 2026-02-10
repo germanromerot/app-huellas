@@ -28,6 +28,7 @@
       proType: "vet",
       price: 500,
       extraNote: " (+ insumos si aplica)",
+      durationMin: 30,
     },
     {
       id: "groom_full",
@@ -35,6 +36,7 @@
       proType: "groom",
       price: 1800,
       extraNote: "",
+      durationMin: 60,
     },
   ];
 
@@ -439,11 +441,13 @@
     if (!form) return;
 
     const serviceSelect = $("#serviceSelect");
-    const proTypeSelect = $("#proTypeSelect");
     const proSelect = $("#proSelect");
     const dateInput = $("#dateInput");
     const timeInput = $("#timeInput");
     const hint = $("#formHint");
+    const successModal = $("#successModal");
+    const successMessage = $("#successMessage");
+    const successCloseBtns = $$("#successModal [data-close]");
 
     // Render servicios
     serviceSelect.innerHTML =
@@ -458,24 +462,91 @@
     const minDate = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
     dateInput.min = minDate;
 
-    // Set time min/max “soft” (validamos real en JS)
-    timeInput.min = "09:00";
-    timeInput.max = "18:00";
+    function buildSlotsForDate(dateStr, slotDuration) {
+      if (!dateStr) return [];
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d, 0, 0, 0, 0);
+      const day = dateObj.getDay(); // 0=Dom ... 6=Sáb
 
-    // Al elegir servicio: sugerir tipo profesional y filtrar pro
+      if (day === 0) return []; // domingo
+
+      const open = 9 * 60;
+      const close = day >= 1 && day <= 5 ? 18 * 60 : 12 * 60 + 30;
+      const slots = [];
+
+      for (let start = open; start + slotDuration <= close; start += slotDuration) {
+        slots.push({ startMin: start, endMin: start + slotDuration });
+      }
+      return slots;
+    }
+
+    function formatHM(totalMin) {
+      const hh = Math.floor(totalMin / 60);
+      const mm = totalMin % 60;
+      return `${pad2(hh)}:${pad2(mm)}`;
+    }
+
+    function getReservedTimesForDate(dateStr) {
+      const all = loadReservations();
+      const prefix = `${dateStr}T`;
+      const set = new Set();
+
+      all.forEach((r) => {
+        if (typeof r.startISO !== "string") return;
+        if (!r.startISO.startsWith(prefix)) return;
+        const timePart = r.startISO.split("T")[1];
+        if (!timePart) return;
+        set.add(timePart.slice(0, 5));
+      });
+
+      return set;
+    }
+
+    function renderTimeSlots() {
+      if (!timeInput) return;
+      const dateStr = dateInput ? String(dateInput.value || "") : "";
+      const serviceId = serviceSelect ? String(serviceSelect.value || "") : "";
+      const service = SERVICES.find((s) => s.id === serviceId);
+      const slotDuration = service?.durationMin || 30;
+      const slots = buildSlotsForDate(dateStr, slotDuration);
+
+      if (!dateStr) {
+        timeInput.innerHTML = `<option value="">Seleccionar…</option>`;
+        return;
+      }
+
+      if (slots.length === 0) {
+        timeInput.innerHTML =
+          `<option value="">Seleccionar…</option>` +
+          `<option value="" disabled>Cerrado</option>`;
+        return;
+      }
+
+      const reserved = getReservedTimesForDate(dateStr);
+
+      const options = slots.map((s) => {
+        const start = formatHM(s.startMin);
+        const end = formatHM(s.endMin);
+        const label = `${start}-${end}`;
+        const disabled = reserved.has(start) ? " disabled" : "";
+        return `<option value="${start}"${disabled}>${label}</option>`;
+      });
+
+      timeInput.innerHTML = `<option value="">Seleccionar…</option>` + options.join("");
+    }
+
+    // Al elegir servicio: filtrar profesionales
     serviceSelect.addEventListener("change", () => {
       const opt = serviceSelect.selectedOptions[0];
-      if (!opt || !opt.value) return;
+      if (!opt || !opt.value) {
+        renderPros("all");
+        renderTimeSlots();
+        return;
+      }
 
       const requiredType = opt.dataset.protype;
-      if (requiredType) {
-        proTypeSelect.value = requiredType;
-        renderPros(requiredType);
-      }
-    });
-
-    proTypeSelect.addEventListener("change", () => {
-      renderPros(proTypeSelect.value || "all");
+      if (requiredType) renderPros(requiredType);
+      renderTimeSlots();
     });
 
     function renderPros(type) {
@@ -490,6 +561,7 @@
     }
 
     renderPros("all");
+    renderTimeSlots();
 
     function setHint(msg, ok = false) {
       if (!hint) return;
@@ -500,8 +572,34 @@
     function hardError(msg) {
       if (!hint) return;
       hint.textContent = msg;
-      hint.style.color = "#8b1e3f"; // un tono vino suave; si no querés color, borrá esta línea
+      hint.style.color = "#8b1e3f";
     }
+
+    function openSuccessModal(msg) {
+      if (!successModal || !successMessage) return;
+      successMessage.textContent = msg;
+      successModal.classList.add("is-open");
+      successModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSuccessModal() {
+      if (!successModal) return;
+      successModal.classList.remove("is-open");
+      successModal.setAttribute("aria-hidden", "true");
+    }
+
+    successCloseBtns.forEach((btn) => btn.addEventListener("click", closeSuccessModal));
+    if (successModal) {
+      successModal.addEventListener("click", (e) => {
+        const target = e.target;
+        if (target && target.classList.contains("modal-backdrop")) {
+          closeSuccessModal();
+        }
+      });
+    }
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSuccessModal();
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -513,7 +611,6 @@
       const petName = String(fd.get("petName") || "").trim();
       const petType = String(fd.get("petType") || "").trim();
       const serviceId = String(fd.get("service") || "").trim();
-      const proType = String(fd.get("proType") || "").trim();
       const proId = String(fd.get("proId") || "").trim();
       const dateStr = String(fd.get("date") || "").trim();
       const timeStr = String(fd.get("time") || "").trim();
@@ -521,18 +618,13 @@
       const email = String(fd.get("email") || "").trim();
 
       // Validación básica
-      if (!ownerName || !petName || !petType || !serviceId || !proType || !proId || !dateStr || !timeStr || !phone) {
+      if (!ownerName || !petName || !petType || !serviceId || !proId || !dateStr || !timeStr || !phone) {
         hardError("Por favor completá todos los campos obligatorios (*)");
         return;
       }
 
       if (!["Perro", "Gato"].includes(petType)) {
         hardError("Tipo de mascota inválido. Solo Perro o Gato.");
-        return;
-      }
-
-      if (!isHalfHourStep(timeStr)) {
-        hardError("La hora debe ser en intervalos de 30 minutos (por ej. 10:00 o 10:30).");
         return;
       }
 
@@ -556,14 +648,9 @@
         hardError("Servicio inválido.");
         return;
       }
-      if (service.proType !== proType) {
-        hardError("El servicio seleccionado no corresponde al tipo de profesional elegido.");
-        return;
-      }
-
       // Profesional válido
       const pro = PROFESSIONALS.find((p) => p.id === proId);
-      if (!pro || pro.type !== proType) {
+      if (!pro || pro.type !== service.proType) {
         hardError("Profesional inválido.");
         return;
       }
@@ -575,7 +662,7 @@
         petType,
         serviceId,
         serviceLabel: service.label,
-        proType,
+        proType: service.proType,
         proId,
         proName: pro.name,
         phone,
@@ -597,26 +684,37 @@
 
       // Confirmación en la web
       const summary = `${newReservation.serviceLabel} con ${newReservation.proName} — ${formatNice(start)}`;
-      setHint(`✅ Reserva confirmada: ${summary}`, true);
+      openSuccessModal(`${summary}`);
 
       form.reset();
       // reponer servicios y selects
       renderPros("all");
       serviceSelect.selectedIndex = 0;
-      proTypeSelect.value = "";
       proSelect.innerHTML = `<option value="">Seleccionar…</option>`;
+      renderTimeSlots();
     });
 
-    // UX: si el user elige tipo pro pero el servicio no coincide, re-filtrar servicios (opcional)
-    proTypeSelect.addEventListener("change", () => {
-      const t = proTypeSelect.value;
-      if (!t) return;
+    // Si no hay servicio seleccionado y se elige profesional,
+    // autoseleccionar un servicio compatible con ese profesional.
+    proSelect.addEventListener("change", () => {
+      if (!proSelect.value) return;
+      if (serviceSelect.value) return;
 
-      // Si hay un servicio seleccionado que no coincide, lo limpiamos.
-      const sid = serviceSelect.value;
-      const s = SERVICES.find((x) => x.id === sid);
-      if (s && s.proType !== t) serviceSelect.value = "";
+      const selectedProId = proSelect.value;
+      const pro = PROFESSIONALS.find((p) => p.id === proSelect.value);
+      if (!pro) return;
+
+      const service = SERVICES.find((s) => s.proType === pro.type);
+      if (service) {
+        serviceSelect.value = service.id;
+        renderPros(service.proType);
+        proSelect.value = selectedProId;
+      }
     });
+
+    if (dateInput) {
+      dateInput.addEventListener("change", renderTimeSlots);
+    }
   }
 
   /* -----------------------------
