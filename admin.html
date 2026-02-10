@@ -88,24 +88,29 @@
           </div>
         </div>
 
-        <div class="admin-list card">
-          <div class="admin-list-head">
-            <h3 class="admin-list-title">Listado</h3>
-            <div class="admin-filters">
-              <select id="typeFilter" aria-label="Filtrar por tipo">
-                <option value="all">Todos</option>
-                <option value="vet">Veterinaria</option>
-                <option value="groom">Estética/Baño</option>
-              </select>
+       <div class="admin-filters">
+            <!-- FILTRO POR SERVICIO -->
+            <select id="serviceFilter" aria-label="Filtrar por servicio">
+              <option value="all">Servicios: Todos</option>
+              <option value="vet">Veterinaria</option>
+              <option value="groom">Estética/Baño</option>
+            </select>
 
-              <input
-                type="search"
-                id="searchInput"
-                placeholder="Buscar por dueño, mascota o profesional…"
-                aria-label="Buscar"
-              />
-            </div>
-          </div>
+          <!-- FILTRO POR FECHA -->
+            <select id="dateFilter" aria-label="Filtrar por fecha">
+              <option value="all">Fechas: Todas</option>
+              <option value="future">Futuras</option>
+              <option value="past">Pasadas</option>
+            </select>
+
+            <input
+              type="search"
+              id="searchInput"
+              placeholder="Buscar por dueño, mascota o profesional…"
+              aria-label="Buscar"
+            />
+        </div>
+
 
           <ul class="reservations" id="reservationsList" aria-label="Reservas">
             <!-- Items inyectados por admin.js -->

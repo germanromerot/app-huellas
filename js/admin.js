@@ -62,7 +62,9 @@
   const listEl = $("#reservationsList");
   const emptyState = $("#emptyState");
 
-  const typeFilter = $("#typeFilter");
+  const serviceFilter = $("#serviceFilter");
+  const dateFilter = $("#dateFilter");
+
   const searchInput = $("#searchInput");
 
   const countTotal = $("#countTotal");
@@ -285,24 +287,35 @@
     Render + filtros
   ----------------------------- */
 
-  function getFilteredReservations(all) {
-    const type = typeFilter ? typeFilter.value : "all";
-    const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+ function getFilteredReservations(all) {
+  const service = serviceFilter ? serviceFilter.value : "all";
+  const dateF = dateFilter ? dateFilter.value : "all";
+  const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
 
-    return all.filter((r) => {
-      // filtro tipo
-      const okType = type === "all" ? true : r.proType === type;
+  const now = new Date();
 
-      // filtro texto
-      if (!q) return okType;
+  return all.filter((r) => {
+    // filtro por servicio
+    const okService = service === "all" ? true : r.proType === service;
 
-      const hay =
-        `${r.ownerName} ${r.petName} ${r.petType} ${r.serviceLabel} ${r.proName} ${r.phone} ${r.email}`
-          .toLowerCase();
+    // filtro por fecha
+    const start = parseISOKey(r.startISO);
+    let okDate = true;
 
-      return okType && hay.includes(q);
-    });
-  }
+    if (dateF === "future") okDate = start >= now;
+    if (dateF === "past") okDate = start < now;
+
+    // filtro texto
+    if (!q) return okService && okDate;
+
+    const hay =
+      `${r.ownerName} ${r.petName} ${r.petType} ${r.serviceLabel} ${r.proName} ${r.phone} ${r.email}`
+        .toLowerCase();
+
+    return okService && okDate && hay.includes(q);
+  });
+}
+
 
   function updateCounters(all) {
     if (!countTotal || !countVet || !countGroom) return;
@@ -451,7 +464,8 @@
     }
 
     // filtros
-    if (typeFilter) typeFilter.addEventListener("change", renderList);
+    if (serviceFilter) serviceFilter.addEventListener("change", renderList);
+    if (dateFilter) dateFilter.addEventListener("change", renderList);
     if (searchInput) {
       searchInput.addEventListener("input", () => {
         // para que se sienta fluido, sin setTimeout
