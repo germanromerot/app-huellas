@@ -329,41 +329,63 @@
   }
 
   function reservationItemHTML(r) {
-    const start = parseISOKey(r.startISO);
-    const when = isNaN(start.getTime()) ? r.startISO : formatNice(start);
+  const start = parseISOKey(r.startISO);
+  const when = isNaN(start.getTime()) ? r.startISO : formatNice(start);
 
-    const badgeClass = r.proType === "vet" ? "vet" : "groom";
-    const badgeText = r.proType === "vet" ? "Veterinaria" : "Estética/Baño";
+  const status = r.status || "active";
+  const isCancelled = status === "cancelled";
 
-    const emailLine = r.email ? `<div class="meta-item"><span>✉️</span><strong>${escapeHtml(r.email)}</strong></div>` : "";
+  const badgeClass = r.proType === "vet" ? "vet" : "groom";
+  const badgeText = r.proType === "vet" ? "Veterinaria" : "Estética/Baño";
 
-    return `
-      <li class="reservation" data-id="${escapeHtml(r.id)}" data-type="${escapeHtml(r.proType)}">
-        <div class="reservation-main">
-          <div class="reservation-top">
-            <span class="badge ${badgeClass}">${badgeText}</span>
-            <p class="reservation-title">
-              <strong>${escapeHtml(r.ownerName)}</strong> · ${escapeHtml(r.petName)} (${escapeHtml(r.petType)})
-            </p>
-          </div>
+  const emailLine = r.email
+    ? `<div class="meta-item"><span>✉️</span><strong>${escapeHtml(r.email)}</strong></div>`
+    : "";
 
-          <div class="reservation-meta">
-            <div class="meta-item"><span>🗓️</span><strong>${escapeHtml(when)}</strong></div>
-            <div class="meta-item"><span>🧑‍⚕️</span><strong>${escapeHtml(r.proName)}</strong></div>
-            <div class="meta-item"><span>🧾</span><strong>${escapeHtml(r.serviceLabel)}</strong></div>
-            <div class="meta-item"><span>📞</span><strong>${escapeHtml(r.phone)}</strong></div>
-            ${emailLine}
-          </div>
+  const statusBadge = isCancelled
+    ? `<span class="badge cancelled">Cancelada</span>`
+    : `<span class="badge active">Activa</span>`;
+
+  return `
+    <li class="reservation ${isCancelled ? "is-cancelled" : ""}" data-id="${escapeHtml(
+      r.id
+    )}">
+      <div class="reservation-main">
+        <div class="reservation-top">
+          <span class="badge ${badgeClass}">${badgeText}</span>
+          ${statusBadge}
+          <p class="reservation-title">
+            <strong>${escapeHtml(r.ownerName)}</strong> · ${escapeHtml(r.petName)} (${escapeHtml(
+    r.petType
+  )})
+          </p>
         </div>
 
-        <div class="reservation-actions">
-          <button class="btn btn-danger" type="button" data-action="delete" data-id="${escapeHtml(r.id)}">
-            Eliminar
-          </button>
+        <div class="reservation-meta">
+          <div class="meta-item"><span>🗓️</span><strong>${escapeHtml(when)}</strong></div>
+          <div class="meta-item"><span>🧑‍⚕️</span><strong>${escapeHtml(r.proName)}</strong></div>
+          <div class="meta-item"><span>🧾</span><strong>${escapeHtml(r.serviceLabel)}</strong></div>
+          <div class="meta-item"><span>📞</span><strong>${escapeHtml(r.phone)}</strong></div>
+          ${emailLine}
         </div>
-      </li>
-    `;
-  }
+      </div>
+
+      <div class="reservation-actions">
+        <button
+          class="btn ${isCancelled ? "btn-disabled" : "btn-warning"}"
+          type="button"
+          data-action="cancel"
+          data-id="${escapeHtml(r.id)}"
+          ${isCancelled ? "disabled" : ""}
+        >
+          ${isCancelled ? "Cancelada" : "Cancelar"}
+        </button>
+      </div>
+    </li>
+  `;
+}
+
+
 
   function renderList() {
     if (!listEl) return;
@@ -389,11 +411,24 @@
     Actions: eliminar / borrar todo
   ----------------------------- */
 
-  function deleteReservationById(id) {
-    const all = loadReservations();
-    const next = all.filter((r) => r.id !== id);
-    saveReservations(next);
-  }
+  function cancelReservationById(id) {
+  const all = loadReservations();
+
+  const next = all.map((r) => {
+    // normalizar reservas viejas sin status
+    if (!r.status) r.status = "active";
+
+    if (r.id !== id) return r;
+
+    // si ya estaba cancelada, no tocar
+    if (r.status === "cancelled") return r;
+
+    return { ...r, status: "cancelled", cancelledAt: Date.now() };
+  });
+
+  saveReservations(next);
+}
+
 
   function clearAllReservations() {
     saveReservations([]);
@@ -446,56 +481,60 @@
   ----------------------------- */
 
   function bindUI() {
-    // Delegación de eventos para eliminar
-    if (listEl) {
-      listEl.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-action='delete']");
-        if (!btn) return;
+  // Delegación de eventos para cancelar reservas
+  if (listEl) {
+    listEl.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action='cancel']");
+      if (!btn) return;
 
-        const id = btn.dataset.id;
-        if (!id) return;
+      // Si ya está cancelada, no hacer nada
+      if (btn.disabled) return;
 
-        const ok = confirm("¿Eliminar esta reserva?");
-        if (!ok) return;
+      const id = btn.dataset.id;
+      if (!id) return;
 
-        deleteReservationById(id);
-        renderList();
-      });
-    }
+      const ok = confirm("¿Cancelar esta reserva?");
+      if (!ok) return;
 
-    // filtros
-    if (serviceFilter) serviceFilter.addEventListener("change", renderList);
-    if (dateFilter) dateFilter.addEventListener("change", renderList);
-    if (searchInput) {
-      searchInput.addEventListener("input", () => {
-        // para que se sienta fluido, sin setTimeout
-        renderList();
-      });
-    }
-
-    // seed
-    if (seedBtn) {
-      seedBtn.addEventListener("click", () => {
-        const current = loadReservations();
-        if (current.length > 0) {
-          alert("Ya hay reservas cargadas. Si querés ejemplos, primero borrá todo.");
-          return;
-        }
-        ensureSeedData();
-        renderList();
-      });
-    }
-
-    // clear
-    if (clearBtn) {
-      clearBtn.addEventListener("click", () => {
-        const ok = confirm("¿Seguro que querés borrar TODAS las reservas?");
-        if (!ok) return;
-        clearAllReservations();
-        renderList();
-      });
-    }
+      cancelReservationById(id);
+      renderList();
+    });
   }
+
+  // filtros
+  if (serviceFilter) serviceFilter.addEventListener("change", renderList);
+  if (dateFilter) dateFilter.addEventListener("change", renderList);
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      renderList();
+    });
+  }
+
+  // seed
+  if (seedBtn) {
+    seedBtn.addEventListener("click", () => {
+      const current = loadReservations();
+      if (current.length > 0) {
+        alert("Ya hay reservas cargadas. Si querés ejemplos, primero borrá todo.");
+        return;
+      }
+      ensureSeedData();
+      renderList();
+    });
+  }
+
+  // clear
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      const ok = confirm("¿Seguro que querés borrar TODAS las reservas?");
+      if (!ok) return;
+      clearAllReservations();
+      renderList();
+    });
+  }
+}
+
 
   /* -----------------------------
     Init
