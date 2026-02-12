@@ -146,11 +146,13 @@
   function showLogin() {
     if (loginSection) loginSection.classList.remove("is-hidden");
     if (panelSection) panelSection.classList.add("is-hidden");
+    if (logoutBtn) logoutBtn.classList.add("is-hidden");
   }
 
   function showPanel() {
     if (loginSection) loginSection.classList.add("is-hidden");
     if (panelSection) panelSection.classList.remove("is-hidden");
+    if (logoutBtn) logoutBtn.classList.remove("is-hidden");
   }
 
   function setLoginMsg(msg) {
