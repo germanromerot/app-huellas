@@ -7,7 +7,6 @@
   - Persistencia en localStorage + precarga de reservas ejemplo
   - (Opcional) deja listo un "admin login" si luego agregás el modal/botón
 ========================================================================== */
-(() => {
   "use strict";
 
   /* -----------------------------
@@ -115,32 +114,6 @@
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
   const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
-  const pad2 = (n) => String(n).padStart(2, "0");
-
-  function parseDateTime(dateStr, timeStr) {
-    // dateStr: YYYY-MM-DD, timeStr: HH:MM
-    const [y, m, d] = dateStr.split("-").map(Number);
-    const [hh, mm] = timeStr.split(":").map(Number);
-    return new Date(y, m - 1, d, hh, mm, 0, 0);
-  }
-
-  function toISOKey(dateObj) {
-    // "YYYY-MM-DDTHH:MM"
-    return (
-      `${dateObj.getFullYear()}-${pad2(dateObj.getMonth() + 1)}-${pad2(dateObj.getDate())}` +
-      `T${pad2(dateObj.getHours())}:${pad2(dateObj.getMinutes())}`
-    );
-  }
-
-  function formatNice(dateObj) {
-    const d = pad2(dateObj.getDate());
-    const m = pad2(dateObj.getMonth() + 1);
-    const y = dateObj.getFullYear();
-    const hh = pad2(dateObj.getHours());
-    const mm = pad2(dateObj.getMinutes());
-    return `${d}/${m}/${y} ${hh}:${mm}`;
-  }
-
   function loadReservations() {
     try {
       const raw = localStorage.getItem(LS_KEY);
@@ -152,42 +125,6 @@
 
   function saveReservations(items) {
     localStorage.setItem(LS_KEY, JSON.stringify(items));
-  }
-
-  function sortReservations(items) {
-    return items
-      .slice()
-      .sort((a, b) => (a.startISO < b.startISO ? -1 : a.startISO > b.startISO ? 1 : 0));
-  }
-
-  function isOpenHours(dateObj) {
-    // L-V 09:00–18:00, Sáb 09:00–12:30, Dom cerrado
-    const day = dateObj.getDay(); // 0=Dom ... 6=Sáb
-    const minutes = dateObj.getHours() * 60 + dateObj.getMinutes();
-
-    if (day === 0) return false; // domingo
-    if (day >= 1 && day <= 5) {
-      // lun-vie
-      const open = 9 * 60;
-      const close = 18 * 60; // último turno puede empezar a las 17:30
-      return minutes >= open && minutes <= close - 30;
-    }
-    // sábado
-    const openSat = 9 * 60;
-    const closeSat = 12 * 60 + 30; // último turno puede empezar a las 12:00
-    return minutes >= openSat && minutes <= closeSat - 30;
-  }
-
-  function isHalfHourStep(timeStr) {
-    // Permite :00 o :30
-    const mm = Number(timeStr.split(":")[1] || 0);
-    return mm === 0 || mm === 30;
-  }
-
-  function hasOverlap(existing, candidate) {
-    // regla: no se pisa para mismo profesional
-    // como todos son 30 min exactos, basta chequear mismo startISO y proId
-    return existing.some((r) => r.proId === candidate.proId && r.startISO === candidate.startISO);
   }
 
   function ensureSeedData() {
@@ -804,19 +741,6 @@
   }
 
   /* -----------------------------
-    Utils: escape HTML
-  ----------------------------- */
-
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  /* -----------------------------
     Init
   ----------------------------- */
 
@@ -842,6 +766,3 @@
     // Si después agregás login modal, ya queda listo:
     initOptionalLogin();
   });
-
-})();
- 
