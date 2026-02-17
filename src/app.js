@@ -1,263 +1,68 @@
-/* ==========================================================================
-  index.js — Página de inicio (Vet & Estética)
-  - Carrusel
-  - Menú mobile (toggle)
-  - Render profesionales + filtro
-  - Formulario reserva + validaciones (horarios / duración / solapamientos)
-  - Persistencia en localStorage + precarga de reservas ejemplo
-  - (Opcional) deja listo un "admin login" si luego agregás el modal/botón
-========================================================================== */
+(() => {
   "use strict";
 
-  /* -----------------------------
-    Config / datos “mock”
-  ----------------------------- */
+  const core = window.VetCore || {};
+  const constants = core.config?.constants;
+  const catalog = core.config?.catalog;
+  const auth = core.config?.auth;
+  const datetime = core.shared?.datetime;
+  const text = core.shared?.text;
+  const sort = core.shared?.sort;
+  const rules = core.reservations?.rules;
+  const slots = core.reservations?.slots;
+  const overlap = core.reservations?.overlap;
+  const factory = core.reservations?.factory;
+  const reservationsStore = core.storage?.reservationsStore;
+  const sessionStore = core.storage?.sessionStore;
+  const seedReservations = core.seed?.seedReservations;
 
-  const LS_KEY = "vetestetica_reservas_v1";
-  const LS_SEEDED_KEY = "vetestetica_seeded_v1";
-  const LS_ADMIN_SESSION = "vetestetica_admin_session_v1";
+  const modulesReady =
+    constants &&
+    catalog &&
+    auth &&
+    datetime &&
+    text &&
+    sort &&
+    rules &&
+    slots &&
+    overlap &&
+    factory &&
+    reservationsStore &&
+    sessionStore &&
+    seedReservations;
 
-  // Credenciales admin (si luego agregás el modal/login)
-  const ADMIN_USER = { username: "admin", password: "1234" };
+  if (!modulesReady) {
+    console.error("VetCore modules are missing. Check script order in index.html.");
+    return;
+  }
 
-  const SERVICES = [
-    {
-      id: "vet_consulta",
-      label: "Consulta veterinaria",
-      proType: "vet",
-      price: 500,
-      extraNote: " (+ insumos si aplica)",
-      durationMin: 30,
-    },
-    {
-      id: "groom_full",
-      label: "Estética completa (lavado, secado, corte, uñas)",
-      proType: "groom",
-      price: 1800,
-      extraNote: "",
-      durationMin: 60,
-    },
-  ];
+  const SERVICES = catalog.SERVICES;
+  const PROFESSIONALS = catalog.PROFESSIONALS;
+  const ADMIN_USER = auth.ADMIN_USER;
 
-  const PROFESSIONALS = [
-    { id: "vet-1", type: "vet", name: "Dra. Lucía Pereira", specialty: "Veterinaria" },
-    { id: "vet-2", type: "vet", name: "Dr. Martín Suárez", specialty: "Veterinario" },
-    { id: "vet-3", type: "vet", name: "Dra. Sofía Méndez", specialty: "Veterinaria" },
-
-    { id: "groom-1", type: "groom", name: "Valentina Rocha", specialty: "Estilista" },
-    { id: "groom-2", type: "groom", name: "Camila Fernández", specialty: "Estilista" },
-    { id: "groom-3", type: "groom", name: "Agustina Silva", specialty: "Estilista" },
-  ];
-
-  // Slides “sin imágenes reales” (uso gradientes, podés cambiar por <img> si querés)
   const SLIDES = [
-    {
-      title: "Baño",
-      text: "Baño para nuestro cliente Amadeo.",
-      bg: "url(img/slider-4.jpg)",
-      //bg: "linear-gradient(135deg, var(--p4), var(--p1))",
-    },
-    {
-      title: "Veterinaria",
-      text: "Sedacion para nuestro cliente Toby.",
-      bg: "url(img/slider-5.jpg)",
-      //bg: "linear-gradient(135deg, var(--p2), var(--p3))",
-    },
-    {
-      title: "Consulta",
-      text: "Consulta para nuestro cliente Rocky.",
-      bg: "url(img/slider-6.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
-    {
-      title: "Baño",
-      text: "Baño para nuestro cliente Pepe.",
-      bg: "url(img/slider-7.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
-    {
-      title: "Consulta",
-      text: "Consulta para nuestro cliente Ambar.",
-      bg: "url(img/slider-8.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
-    {
-      title: "Consulta",
-      text: "Consulta para nuestro cliente Nina.",
-      bg: "url(img/slider-9.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
-    {
-      title: "Baño",
-      text: "Baño para nuestro cliente Cleopatra.",
-      bg: "url(img/slider-10.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
-    {
-      title: "Corte de uñas",
-      text: "Corte de uñas para nuestro cliente Pipe.",
-      bg: "url(img/slider-11.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
-    {
-      title: "Veterinaria",
-      text: "Sedacion para nuestro cliente Tito.",
-      bg: "url(img/slider-12.jpg)",
-      //bg: "linear-gradient(135deg, var(--p3), var(--p1))",
-    },
+    { title: "Bano", text: "Bano para nuestro cliente Amadeo.", bg: "url(img/slider-4.jpg)" },
+    { title: "Veterinaria", text: "Sedacion para nuestro cliente Toby.", bg: "url(img/slider-5.jpg)" },
+    { title: "Consulta", text: "Consulta para nuestro cliente Rocky.", bg: "url(img/slider-6.jpg)" },
+    { title: "Bano", text: "Bano para nuestro cliente Pepe.", bg: "url(img/slider-7.jpg)" },
+    { title: "Consulta", text: "Consulta para nuestro cliente Ambar.", bg: "url(img/slider-8.jpg)" },
+    { title: "Consulta", text: "Consulta para nuestro cliente Nina.", bg: "url(img/slider-9.jpg)" },
+    { title: "Bano", text: "Bano para nuestro cliente Cleopatra.", bg: "url(img/slider-10.jpg)" },
+    { title: "Corte de unas", text: "Corte de unas para nuestro cliente Pipe.", bg: "url(img/slider-11.jpg)" },
+    { title: "Veterinaria", text: "Sedacion para nuestro cliente Tito.", bg: "url(img/slider-12.jpg)" },
   ];
 
-  /* -----------------------------
-    Helpers
-  ----------------------------- */
-
+  // Selecciona el primer elemento que coincide con el selector.
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  // Selecciona todos los elementos que coinciden y los devuelve como array.
   const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
-  function loadReservations() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+  // Obtiene la duracion de un servicio o usa el valor por defecto.
+  function getServiceDurationById(serviceId) {
+    return catalog.SERVICES_BY_ID?.[serviceId]?.durationMin || constants.DEFAULT_SLOT_MIN;
   }
 
-  function saveReservations(items) {
-    localStorage.setItem(LS_KEY, JSON.stringify(items));
-  }
-
-  function ensureSeedData() {
-    if (localStorage.getItem(LS_SEEDED_KEY) === "1") return;
-
-    // Precarga con 6 reservas ejemplo (algunas vet, algunas groom)
-    // Nota: uso fechas relativas a "hoy" para que siempre haya ejemplos válidos.
-    const today = new Date();
-    const plusDays = (n) => {
-      const x = new Date(today);
-      x.setDate(x.getDate() + n);
-      return x;
-    };
-
-    // Buscamos próximos días hábiles para que caigan en horario
-    const nextBusinessDay = (startOffset) => {
-      const d = plusDays(startOffset);
-      // si cae domingo -> lunes
-      if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-      return d;
-    };
-
-    const d1 = nextBusinessDay(1);
-    const d2 = nextBusinessDay(2);
-    const d3 = nextBusinessDay(3);
-
-    const examples = [
-      {
-        id: crypto.randomUUID?.() || String(Date.now()) + "-1",
-        ownerName: "Ana López",
-        petName: "Milo",
-        petType: "Perro",
-        serviceId: "groom_full",
-        serviceLabel: SERVICES.find((s) => s.id === "groom_full").label,
-        proType: "groom",
-        proId: "groom-1",
-        proName: PROFESSIONALS.find((p) => p.id === "groom-1").name,
-        phone: "099 111 222",
-        email: "ana@mail.com",
-        status: "active",
-        startISO: toISOKey(new Date(d1.getFullYear(), d1.getMonth(), d1.getDate(), 10, 0)),
-        createdAt: Date.now(),
-      },
-      {
-        id: crypto.randomUUID?.() || String(Date.now()) + "-2",
-        ownerName: "Bruno Pérez",
-        petName: "Luna",
-        petType: "Gato",
-        serviceId: "vet_consulta",
-        serviceLabel: SERVICES.find((s) => s.id === "vet_consulta").label,
-        proType: "vet",
-        proId: "vet-2",
-        proName: PROFESSIONALS.find((p) => p.id === "vet-2").name,
-        phone: "098 333 444",
-        email: "",
-        status: "active",
-        startISO: toISOKey(new Date(d1.getFullYear(), d1.getMonth(), d1.getDate(), 11, 30)),
-        createdAt: Date.now(),
-      },
-      {
-        id: crypto.randomUUID?.() || String(Date.now()) + "-3",
-        ownerName: "Carla Gómez",
-        petName: "Toby",
-        petType: "Perro",
-        serviceId: "vet_consulta",
-        serviceLabel: SERVICES.find((s) => s.id === "vet_consulta").label,
-        proType: "vet",
-        proId: "vet-1",
-        proName: PROFESSIONALS.find((p) => p.id === "vet-1").name,
-        phone: "097 222 555",
-        email: "carla@mail.com",
-        status: "active",
-        startISO: toISOKey(new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 9, 0)),
-        createdAt: Date.now(),
-      },
-      {
-        id: crypto.randomUUID?.() || String(Date.now()) + "-4",
-        ownerName: "Diego Silva",
-        petName: "Nina",
-        petType: "Gato",
-        serviceId: "groom_full",
-        serviceLabel: SERVICES.find((s) => s.id === "groom_full").label,
-        proType: "groom",
-        proId: "groom-2",
-        proName: PROFESSIONALS.find((p) => p.id === "groom-2").name,
-        phone: "096 555 666",
-        email: "",
-        status: "active",
-        startISO: toISOKey(new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 15, 0)),
-        createdAt: Date.now(),
-      },
-      {
-        id: crypto.randomUUID?.() || String(Date.now()) + "-5",
-        ownerName: "Elena Rodríguez",
-        petName: "Simba",
-        petType: "Perro",
-        serviceId: "groom_full",
-        serviceLabel: SERVICES.find((s) => s.id === "groom_full").label,
-        proType: "groom",
-        proId: "groom-3",
-        proName: PROFESSIONALS.find((p) => p.id === "groom-3").name,
-        phone: "091 000 999",
-        email: "elena@mail.com",
-        status: "active",
-        startISO: toISOKey(new Date(d3.getFullYear(), d3.getMonth(), d3.getDate(), 12, 0)),
-        createdAt: Date.now(),
-      },
-      {
-        id: crypto.randomUUID?.() || String(Date.now()) + "-6",
-        ownerName: "Federico Núñez",
-        petName: "Kira",
-        petType: "Gato",
-        serviceId: "vet_consulta",
-        serviceLabel: SERVICES.find((s) => s.id === "vet_consulta").label,
-        proType: "vet",
-        proId: "vet-3",
-        proName: PROFESSIONALS.find((p) => p.id === "vet-3").name,
-        phone: "095 222 111",
-        email: "",
-        status: "active",
-        startISO: toISOKey(new Date(d3.getFullYear(), d3.getMonth(), d3.getDate(), 16, 30)),
-        createdAt: Date.now(),
-      },
-    ];
-
-    saveReservations(examples);
-    localStorage.setItem(LS_SEEDED_KEY, "1");
-  }
-
-  /* -----------------------------
-    Header: menú mobile
-  ----------------------------- */
-
+  // Inicializa el menu mobile y su comportamiento de cierre.
   function initNav() {
     const navToggle = $("#navToggle");
     const nav = $("#nav");
@@ -268,7 +73,6 @@
       navToggle.setAttribute("aria-expanded", open ? "true" : "false");
     });
 
-    // cerrar al click en link
     $$("#nav a").forEach((a) => {
       a.addEventListener("click", () => {
         nav.classList.remove("is-open");
@@ -276,19 +80,14 @@
       });
     });
 
-    // cerrar con escape
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        nav.classList.remove("is-open");
-        navToggle.setAttribute("aria-expanded", "false");
-      }
+      if (e.key !== "Escape") return;
+      nav.classList.remove("is-open");
+      navToggle.setAttribute("aria-expanded", "false");
     });
   }
 
-  /* -----------------------------
-    Carrusel
-  ----------------------------- */
-
+  // Inicializa el carrusel principal con navegacion y autoplay.
   function initCarousel() {
     const track = $("#carouselTrack");
     const dotsWrap = $("#carouselDots");
@@ -299,40 +98,55 @@
     let index = 0;
     let timer = null;
 
+    // Renderiza slides y dots segun la configuracion.
     function renderSlides() {
-      track.innerHTML = SLIDES.map((s) => {
-        return `
-          <article class="slide" style="background:${s.bg}">
+      track.innerHTML = SLIDES.map(
+        (slide) => `
+          <article class="slide" style="background:${slide.bg}">
             <div class="caption">
-              <h3>${escapeHtml(s.title)}</h3>
-              <p>${escapeHtml(s.text)}</p>
+              <h3>${text.escapeHtml(slide.title)}</h3>
+              <p>${text.escapeHtml(slide.text)}</p>
             </div>
           </article>
-        `;
-      }).join("");
+        `
+      ).join("");
 
       dotsWrap.innerHTML = SLIDES.map(
-        (_, i) => `<button class="dot ${i === 0 ? "is-active" : ""}" aria-label="Ir al slide ${i + 1}" data-i="${i}" type="button"></button>`
+        (_, i) =>
+          `<button class="dot ${i === 0 ? "is-active" : ""}" aria-label="Ir al slide ${
+            i + 1
+          }" data-i="${i}" type="button"></button>`
       ).join("");
     }
 
+    // Mueve el carrusel a un indice valido y actualiza el estado visual.
     function goTo(i) {
       const total = SLIDES.length;
       index = (i + total) % total;
       track.style.transform = `translateX(${-index * 100}%)`;
 
-      $$(".dot", dotsWrap).forEach((d, di) => {
-        d.classList.toggle("is-active", di === index);
+      $$(".dot", dotsWrap).forEach((dot, dotIndex) => {
+        dot.classList.toggle("is-active", dotIndex === index);
       });
     }
 
-    function next() { goTo(index + 1); }
-    function prev() { goTo(index - 1); }
+    // Avanza al siguiente slide.
+    function next() {
+      goTo(index + 1);
+    }
 
+    // Retrocede al slide anterior.
+    function prev() {
+      goTo(index - 1);
+    }
+
+    // Inicia el autoplay del carrusel.
     function startAuto() {
       stopAuto();
       timer = window.setInterval(next, 5000);
     }
+
+    // Detiene el autoplay del carrusel.
     function stopAuto() {
       if (timer) window.clearInterval(timer);
       timer = null;
@@ -342,47 +156,60 @@
     goTo(0);
     startAuto();
 
-    btnNext.addEventListener("click", () => { next(); startAuto(); });
-    btnPrev.addEventListener("click", () => { prev(); startAuto(); });
-
-    dotsWrap.addEventListener("click", (e) => {
-      const b = e.target.closest(".dot");
-      if (!b) return;
-      goTo(Number(b.dataset.i));
+    btnNext.addEventListener("click", () => {
+      next();
+      startAuto();
+    });
+    btnPrev.addEventListener("click", () => {
+      prev();
       startAuto();
     });
 
-    // swipe básico móvil
-    let startX = 0;
-    track.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; stopAuto(); }, { passive: true });
-    track.addEventListener("touchend", (e) => {
-      const endX = e.changedTouches[0].clientX;
-      const dx = endX - startX;
-      if (Math.abs(dx) > 40) (dx < 0 ? next() : prev());
+    dotsWrap.addEventListener("click", (e) => {
+      const btn = e.target.closest(".dot");
+      if (!btn) return;
+      goTo(Number(btn.dataset.i));
       startAuto();
-    }, { passive: true });
+    });
 
-    // pausa al hover (desktop)
+    let startX = 0;
+    track.addEventListener(
+      "touchstart",
+      (e) => {
+        startX = e.touches[0].clientX;
+        stopAuto();
+      },
+      { passive: true }
+    );
+    track.addEventListener(
+      "touchend",
+      (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const dx = endX - startX;
+        if (Math.abs(dx) > 40) (dx < 0 ? next : prev)();
+        startAuto();
+      },
+      { passive: true }
+    );
+
     track.addEventListener("mouseenter", stopAuto);
     track.addEventListener("mouseleave", startAuto);
   }
 
-  /* -----------------------------
-    Profesionales + filtros
-  ----------------------------- */
-
+  // Renderiza profesionales y aplica filtro por tipo.
   function initProfessionals() {
     const grid = $("#proGrid");
     if (!grid) return;
 
-    function card(p) {
-      const badge = p.type === "vet" ? "Veterinaria" : "Estética/Baño";
+    // Genera el HTML de una tarjeta de profesional.
+    function card(professional) {
+      const badge = professional.type === "vet" ? "Veterinaria" : "Estetica/Bano";
       return `
-        <article class="card pro" data-type="${p.type}">
+        <article class="card pro" data-type="${professional.type}">
           <div class="avatar" aria-hidden="true"></div>
           <div class="meta">
-            <h3>${escapeHtml(p.name)}</h3>
-            <p>${escapeHtml(p.specialty)}</p>
+            <h3>${text.escapeHtml(professional.name)}</h3>
+            <p>${text.escapeHtml(professional.specialty)}</p>
           </div>
           <div class="hover" aria-hidden="true">
             <span>${badge}</span>
@@ -396,25 +223,19 @@
     const chips = $$(".chip");
     chips.forEach((btn) => {
       btn.addEventListener("click", () => {
-        chips.forEach((b) => b.classList.remove("is-active"));
+        chips.forEach((chip) => chip.classList.remove("is-active"));
         btn.classList.add("is-active");
 
         const filter = btn.dataset.filter;
-        const cards = $$(".pro", grid);
-
-        cards.forEach((c) => {
-          const type = c.dataset.type;
-          const show = filter === "all" ? true : type === filter;
-          c.style.display = show ? "" : "none";
+        $$(".pro", grid).forEach((cardEl) => {
+          const show = filter === "all" ? true : cardEl.dataset.type === filter;
+          cardEl.style.display = show ? "" : "none";
         });
       });
     });
   }
 
-  /* -----------------------------
-    Formulario reserva
-  ----------------------------- */
-
+  // Inicializa el formulario de reservas y sus validaciones.
   function initBookingForm() {
     const form = $("#bookingForm");
     if (!form) return;
@@ -428,132 +249,23 @@
     const successMessage = $("#successMessage");
     const successCloseBtns = $$("#successModal [data-close]");
 
-    // Render servicios
-    serviceSelect.innerHTML =
-      `<option value="">Seleccionar…</option>` +
-      SERVICES.map((s) => {
-        const label = `${s.label} — $${s.price}${s.extraNote}`;
-        return `<option value="${s.id}" data-protype="${s.proType}">${escapeHtml(label)}</option>`;
-      }).join("");
+    if (!serviceSelect || !proSelect || !dateInput || !timeInput) return;
 
-    // Set min date a hoy
-    const today = new Date();
-    const minDate = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
-    dateInput.min = minDate;
-
-    function buildSlotsForDate(dateStr, slotDuration) {
-      if (!dateStr) return [];
-      const [y, m, d] = dateStr.split("-").map(Number);
-      const dateObj = new Date(y, m - 1, d, 0, 0, 0, 0);
-      const day = dateObj.getDay(); // 0=Dom ... 6=Sáb
-
-      if (day === 0) return []; // domingo
-
-      const open = 9 * 60;
-      const close = day >= 1 && day <= 5 ? 18 * 60 : 12 * 60 + 30;
-      const slots = [];
-
-      for (let start = open; start + slotDuration <= close; start += slotDuration) {
-        slots.push({ startMin: start, endMin: start + slotDuration });
-      }
-      return slots;
-    }
-
-    function formatHM(totalMin) {
-      const hh = Math.floor(totalMin / 60);
-      const mm = totalMin % 60;
-      return `${pad2(hh)}:${pad2(mm)}`;
-    }
-
-    function getReservedTimesForDate(dateStr) {
-      const all = loadReservations();
-      const prefix = `${dateStr}T`;
-      const set = new Set();
-
-      all.forEach((r) => {
-        if (typeof r.startISO !== "string") return;
-        if (!r.startISO.startsWith(prefix)) return;
-        const timePart = r.startISO.split("T")[1];
-        if (!timePart) return;
-        set.add(timePart.slice(0, 5));
-      });
-
-      return set;
-    }
-
-    function renderTimeSlots() {
-      if (!timeInput) return;
-      const dateStr = dateInput ? String(dateInput.value || "") : "";
-      const serviceId = serviceSelect ? String(serviceSelect.value || "") : "";
-      const service = SERVICES.find((s) => s.id === serviceId);
-      const slotDuration = service?.durationMin || 30;
-      const slots = buildSlotsForDate(dateStr, slotDuration);
-
-      if (!dateStr) {
-        timeInput.innerHTML = `<option value="">Seleccionar…</option>`;
-        return;
-      }
-
-      if (slots.length === 0) {
-        timeInput.innerHTML =
-          `<option value="">Seleccionar…</option>` +
-          `<option value="" disabled>Cerrado</option>`;
-        return;
-      }
-
-      const reserved = getReservedTimesForDate(dateStr);
-
-      const options = slots.map((s) => {
-        const start = formatHM(s.startMin);
-        const end = formatHM(s.endMin);
-        const label = `${start}-${end}`;
-        const disabled = reserved.has(start) ? " disabled" : "";
-        return `<option value="${start}"${disabled}>${label}</option>`;
-      });
-
-      timeInput.innerHTML = `<option value="">Seleccionar…</option>` + options.join("");
-    }
-
-    // Al elegir servicio: filtrar profesionales
-    serviceSelect.addEventListener("change", () => {
-      const opt = serviceSelect.selectedOptions[0];
-      if (!opt || !opt.value) {
-        renderPros("all");
-        renderTimeSlots();
-        return;
-      }
-
-      const requiredType = opt.dataset.protype;
-      if (requiredType) renderPros(requiredType);
-      renderTimeSlots();
-    });
-
-    function renderPros(type) {
-      const list =
-        type === "all" || !type
-          ? PROFESSIONALS
-          : PROFESSIONALS.filter((p) => p.type === type);
-
-      proSelect.innerHTML =
-        `<option value="">Seleccionar…</option>` +
-        list.map((p) => `<option value="${p.id}">${escapeHtml(p.name)} — ${escapeHtml(p.specialty)}</option>`).join("");
-    }
-
-    renderPros("all");
-    renderTimeSlots();
-
-    function setHint(msg, ok = false) {
+    // Muestra un mensaje de ayuda neutral en el formulario.
+    function setHint(msg) {
       if (!hint) return;
-      hint.textContent = msg;
-      hint.style.color = ok ? "inherit" : "var(--muted)";
+      hint.textContent = msg || "";
+      hint.style.color = "var(--muted)";
     }
 
+    // Muestra un error visible en el formulario.
     function hardError(msg) {
       if (!hint) return;
       hint.textContent = msg;
       hint.style.color = "#8b1e3f";
     }
 
+    // Abre el modal de exito con un mensaje de resumen.
     function openSuccessModal(msg) {
       if (!successModal || !successMessage) return;
       successMessage.textContent = msg;
@@ -561,30 +273,131 @@
       successModal.setAttribute("aria-hidden", "false");
     }
 
+    // Cierra el modal de exito.
     function closeSuccessModal() {
       if (!successModal) return;
       successModal.classList.remove("is-open");
       successModal.setAttribute("aria-hidden", "true");
     }
 
+    // Renderiza profesionales compatibles con el tipo de servicio.
+    function renderPros(type) {
+      const list =
+        type === "all" || !type
+          ? PROFESSIONALS
+          : PROFESSIONALS.filter((professional) => professional.type === type);
+
+      proSelect.innerHTML =
+        `<option value="">Seleccionar...</option>` +
+        list
+          .map(
+            (professional) =>
+              `<option value="${professional.id}">${text.escapeHtml(
+                professional.name
+              )} - ${text.escapeHtml(professional.specialty)}</option>`
+          )
+          .join("");
+    }
+
+    // Renderiza horarios disponibles segun fecha, servicio y profesional.
+    function renderTimeSlots() {
+      const dateStr = String(dateInput.value || "");
+      const serviceId = String(serviceSelect.value || "");
+      const selectedProId = String(proSelect.value || "");
+      const service = catalog.SERVICES_BY_ID?.[serviceId];
+      const slotDuration = service?.durationMin || constants.DEFAULT_SLOT_MIN;
+      const slotsForDate = slots.buildSlotsForDate(dateStr, slotDuration, constants.SCHEDULE);
+
+      if (!dateStr) {
+        timeInput.innerHTML = `<option value="">Seleccionar...</option>`;
+        return;
+      }
+
+      if (slotsForDate.length === 0) {
+        timeInput.innerHTML =
+          `<option value="">Seleccionar...</option>` + `<option value="" disabled>Cerrado</option>`;
+        return;
+      }
+
+      const existing = reservationsStore.loadReservations();
+      const options = slotsForDate.map((slot) => {
+        const start = datetime.formatHM(slot.startMin);
+        const end = datetime.formatHM(slot.endMin);
+        const label = `${start}-${end}`;
+
+        if (!selectedProId) {
+          return `<option value="${start}">${label}</option>`;
+        }
+
+        const candidate = {
+          proId: selectedProId,
+          serviceId,
+          startISO: `${dateStr}T${start}`,
+          durationMin: slotDuration,
+          status: "active",
+        };
+
+        const disabled = overlap.hasOverlap(
+          existing,
+          candidate,
+          getServiceDurationById,
+          constants.DEFAULT_SLOT_MIN
+        );
+        return `<option value="${start}"${disabled ? " disabled" : ""}>${label}</option>`;
+      });
+
+      timeInput.innerHTML = `<option value="">Seleccionar...</option>` + options.join("");
+    }
+
+    serviceSelect.innerHTML =
+      `<option value="">Seleccionar...</option>` +
+      SERVICES.map((service) => {
+        const label = `${service.label} - $${service.price}${service.extraNote || ""}`;
+        return `<option value="${service.id}" data-protype="${service.proType}">${text.escapeHtml(
+          label
+        )}</option>`;
+      }).join("");
+
+    const today = new Date();
+    dateInput.min = `${today.getFullYear()}-${datetime.pad2(today.getMonth() + 1)}-${datetime.pad2(
+      today.getDate()
+    )}`;
+
     successCloseBtns.forEach((btn) => btn.addEventListener("click", closeSuccessModal));
     if (successModal) {
       successModal.addEventListener("click", (e) => {
-        const target = e.target;
-        if (target && target.classList.contains("modal-backdrop")) {
-          closeSuccessModal();
-        }
+        if (e.target && e.target.classList.contains("modal-backdrop")) closeSuccessModal();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeSuccessModal();
     });
 
+    serviceSelect.addEventListener("change", () => {
+      const selectedService = catalog.SERVICES_BY_ID?.[serviceSelect.value];
+      renderPros(selectedService?.proType || "all");
+      renderTimeSlots();
+    });
+
+    proSelect.addEventListener("change", () => {
+      if (proSelect.value && !serviceSelect.value) {
+        const professional = catalog.PROFESSIONALS_BY_ID?.[proSelect.value];
+        const compatibleService = SERVICES.find((service) => service.proType === professional?.type);
+        if (compatibleService) {
+          serviceSelect.value = compatibleService.id;
+          renderPros(compatibleService.proType);
+          proSelect.value = professional.id;
+        }
+      }
+      renderTimeSlots();
+    });
+
+    dateInput.addEventListener("change", renderTimeSlots);
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       setHint("");
 
-      // Valores
       const fd = new FormData(form);
       const ownerName = String(fd.get("ownerName") || "").trim();
       const petName = String(fd.get("petName") || "").trim();
@@ -596,114 +409,102 @@
       const phone = String(fd.get("phone") || "").trim();
       const email = String(fd.get("email") || "").trim();
 
-      // Validación básica
-      if (!ownerName || !petName || !petType || !serviceId || !proId || !dateStr || !timeStr || !phone) {
-        hardError("Por favor completá todos los campos obligatorios (*)");
+      if (
+        !rules.hasRequiredBookingFields({
+          ownerName,
+          petName,
+          petType,
+          serviceId,
+          proId,
+          dateStr,
+          timeStr,
+          phone,
+        })
+      ) {
+        hardError("Por favor completa todos los campos obligatorios (*).");
         return;
       }
 
-      if (!["Perro", "Gato"].includes(petType)) {
-        hardError("Tipo de mascota inválido. Solo Perro o Gato.");
+      if (!rules.isPetTypeAllowed(petType, constants.PET_TYPES)) {
+        hardError("Tipo de mascota invalido. Solo Perro o Gato.");
         return;
       }
 
-      const start = parseDateTime(dateStr, timeStr);
-
-      // No permitir fechas pasadas
-      if (start.getTime() < Date.now() - 60 * 1000) {
-        hardError("Elegí una fecha y hora futura.");
-        return;
-      }
-
-      // Horario de atención
-      if (!isOpenHours(start)) {
-        hardError("Fuera del horario de atención. Lun–Vie 09:00–18:00 · Sáb 09:00–12:30 · Dom cerrado.");
-        return;
-      }
-
-      // Relación servicio / tipo profesional
-      const service = SERVICES.find((s) => s.id === serviceId);
+      const service = catalog.SERVICES_BY_ID?.[serviceId];
       if (!service) {
-        hardError("Servicio inválido.");
-        return;
-      }
-      // Profesional válido
-      const pro = PROFESSIONALS.find((p) => p.id === proId);
-      if (!pro || pro.type !== service.proType) {
-        hardError("Profesional inválido.");
+        hardError("Servicio invalido.");
         return;
       }
 
-      const newReservation = {
-        id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        ownerName,
-        petName,
-        petType,
-        serviceId,
-        serviceLabel: service.label,
-        proType: service.proType,
-        proId,
-        proName: pro.name,
-        phone,
-        email,
-        startISO: toISOKey(start),
-        createdAt: Date.now(),
-        status: "active",
-      };
-
-      const existing = loadReservations();
-
-      // solapamiento
-      if (hasOverlap(existing, newReservation)) {
-        hardError("Ese profesional ya tiene un turno en ese horario. Elegí otro horario o profesional.");
+      const professional = catalog.PROFESSIONALS_BY_ID?.[proId];
+      if (!rules.doesProfessionalMatchService(professional, service)) {
+        hardError("Profesional invalido para el servicio seleccionado.");
         return;
       }
 
-      const updated = sortReservations([...existing, newReservation]);
-      saveReservations(updated);
+      const start = datetime.parseDateTime(dateStr, timeStr);
+      if (!rules.isFutureDate(start)) {
+        hardError("Elegi una fecha y hora futura.");
+        return;
+      }
 
-      // Confirmación en la web
-      const summary = `${newReservation.serviceLabel} con ${newReservation.proName} — ${formatNice(start)}`;
-      openSuccessModal(`${summary}`);
+      if (!rules.isOpenHours(start, service.durationMin, constants.SCHEDULE)) {
+        hardError(
+          "Fuera del horario de atencion. Lun-Vie 09:00-18:00 | Sab 09:00-12:30 | Dom cerrado."
+        );
+        return;
+      }
+
+      const newReservation = factory.createReservation(
+        {
+          ownerName,
+          petName,
+          petType,
+          service,
+          professional,
+          phone,
+          email,
+          startDate: start,
+        },
+        { toISOKey: datetime.toISOKey }
+      );
+      newReservation.durationMin = service.durationMin;
+
+      const existing = reservationsStore.loadReservations();
+      if (
+        overlap.hasOverlap(
+          existing,
+          newReservation,
+          getServiceDurationById,
+          constants.DEFAULT_SLOT_MIN
+        )
+      ) {
+        hardError("Ese profesional ya tiene un turno en ese horario. Elige otro.");
+        return;
+      }
+
+      const updated = sort.sortReservationsByStartISO([...existing, newReservation]);
+      reservationsStore.saveReservations(updated);
+
+      const summary =
+        newReservation.serviceLabel +
+        " con " +
+        newReservation.proName +
+        " - " +
+        datetime.formatNice(start);
+      openSuccessModal(summary);
 
       form.reset();
-      // reponer servicios y selects
       renderPros("all");
-      serviceSelect.selectedIndex = 0;
-      proSelect.innerHTML = `<option value="">Seleccionar…</option>`;
       renderTimeSlots();
     });
 
-    // Si no hay servicio seleccionado y se elige profesional,
-    // autoseleccionar un servicio compatible con ese profesional.
-    proSelect.addEventListener("change", () => {
-      if (!proSelect.value) return;
-      if (serviceSelect.value) return;
-
-      const selectedProId = proSelect.value;
-      const pro = PROFESSIONALS.find((p) => p.id === proSelect.value);
-      if (!pro) return;
-
-      const service = SERVICES.find((s) => s.proType === pro.type);
-      if (service) {
-        serviceSelect.value = service.id;
-        renderPros(service.proType);
-        proSelect.value = selectedProId;
-      }
-    });
-
-    if (dateInput) {
-      dateInput.addEventListener("change", renderTimeSlots);
-    }
+    renderPros("all");
+    renderTimeSlots();
   }
 
-  /* -----------------------------
-    (Opcional) Login modal si lo agregás
-    - No rompe nada si no existe el HTML
-  ----------------------------- */
-
+  // Inicializa el login opcional para acceder al panel admin.
   function initOptionalLogin() {
-    // Si luego agregás: #loginBtn, #loginModal, #loginForm, etc.
     const loginBtn = $("#loginBtn");
     const modal = $("#loginModal");
     const loginForm = $("#loginForm");
@@ -711,11 +512,13 @@
 
     if (!loginBtn || !modal || !loginForm) return;
 
+    // Abre el modal de login.
     const open = () => modal.classList.add("is-open");
+    // Cierra el modal de login.
     const close = () => modal.classList.remove("is-open");
 
     loginBtn.addEventListener("click", open);
-    closeBtns.forEach((b) => b.addEventListener("click", close));
+    closeBtns.forEach((btn) => btn.addEventListener("click", close));
     modal.addEventListener("click", (e) => {
       if (e.target.classList.contains("modal-backdrop")) close();
     });
@@ -725,36 +528,33 @@
 
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const fd = new FormData(loginForm);
-      const u = String(fd.get("username") || "").trim();
-      const p = String(fd.get("password") || "").trim();
 
-      if (u === ADMIN_USER.username && p === ADMIN_USER.password) {
-        localStorage.setItem(LS_ADMIN_SESSION, JSON.stringify({ ok: true, at: Date.now() }));
-        // redirigir a admin.html
+      const fd = new FormData(loginForm);
+      const username = String(fd.get("username") || "").trim();
+      const password = String(fd.get("password") || "").trim();
+
+      if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
+        sessionStore.setSession(true);
         window.location.href = "admin.html";
         return;
       }
+
       const msg = $("#loginMsg", modal);
-      if (msg) msg.textContent = "Usuario o contraseña incorrectos.";
+      if (msg) msg.textContent = "Usuario o contrasena incorrectos.";
     });
   }
 
-  /* -----------------------------
-    Init
-  ----------------------------- */
-
+  // Actualiza el anio visible en el footer.
   function initYear() {
     const y = $("#year");
     if (y) y.textContent = String(new Date().getFullYear());
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Seed de reservas ejemplo solo 1 vez
     try {
-      ensureSeedData();
-    } catch {
-      // si localStorage bloqueado, no seed
+      seedReservations.ensureSeedData();
+    } catch (_err) {
+      // Ignore localStorage failures in restricted environments.
     }
 
     initYear();
@@ -762,7 +562,6 @@
     initCarousel();
     initProfessionals();
     initBookingForm();
-
-    // Si después agregás login modal, ya queda listo:
     initOptionalLogin();
   });
+})();

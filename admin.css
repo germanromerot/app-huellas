@@ -126,11 +126,16 @@ body{
   margin: 0;
 }
 
-.admin-filters{
+ .admin-filters{
   display:flex;
   gap: 10px;
   align-items:center;
-  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+@media(max-width:700px){
+   .admin-filters{
+    flex-direction: column;
+  }
 }
 
 .admin-filters select,
@@ -144,7 +149,7 @@ body{
 }
 
 .admin-filters input[type="search"]{
-  width: min(340px, 55vw);
+  width: 100%;
 }
 
 /* Reservations list */

@@ -63,14 +63,14 @@
             <p class="muted">Ordenadas por fecha y hora. Cada turno dura 30 minutos.</p>
           </div>
 
-          <div class="admin-tools">
+<!--           <div class="admin-tools">
             <button class="btn btn-ghost" id="seedBtn" type="button" title="Cargar ejemplos si no hay reservas">
               Cargar ejemplos
             </button>
             <button class="btn btn-ghost" id="clearBtn" type="button" title="Borrar todas las reservas">
               Borrar todo
             </button>
-          </div>
+          </div> -->
         </div>
 
         <div class="admin-summary card">
@@ -90,25 +90,34 @@
 
        <div class="admin-filters">
             <!-- FILTRO POR SERVICIO -->
-            <select id="serviceFilter" aria-label="Filtrar por servicio">
-              <option value="all">Servicios: Todos</option>
-              <option value="vet">Veterinaria</option>
-              <option value="groom">Estética/Baño</option>
-            </select>
+             <div class="form-group">
+               <label for="serviceFilter">Servicio</label>
+              <select id="serviceFilter" aria-label="Filtrar por servicio">
+                <option value="all">Todos</option>
+                <option value="vet">Veterinaria</option>
+                <option value="groom">Estética/Baño</option>
+              </select>
+             </div>
 
           <!-- FILTRO POR FECHA -->
-            <select id="dateFilter" aria-label="Filtrar por fecha">
-              <option value="all">Fechas: Todas</option>
-              <option value="future">Futuras</option>
-              <option value="past">Pasadas</option>
-            </select>
+           <div class="form-group">
+             <label for="dateFilter">Fechas</label>
+              <select id="dateFilter" aria-label="Filtrar por fecha">
+                <option value="all">Todas</option>
+                <option value="future">Futuras</option>
+                <option value="past">Pasadas</option>
+              </select>
+           </div>
 
-            <input
-              type="search"
-              id="searchInput"
-              placeholder="Buscar por dueño, mascota o profesional…"
-              aria-label="Buscar"
-            />
+           <div class="form-group">
+            <label for="searchInput">Buscar</label>
+             <input
+               type="search"
+               id="searchInput"
+               placeholder="Buscar por dueño, mascota o profesional…"
+               aria-label="Buscar"
+             />
+           </div>
         </div>
 
 
@@ -130,6 +139,21 @@
     </div>
   </footer>
 
+  <script src="./src/core/config/constants.js"></script>
+  <script src="./src/core/config/catalog.js"></script>
+  <script src="./src/core/config/auth.js"></script>
+  <script src="./src/core/shared/datetime.js"></script>
+  <script src="./src/core/shared/text.js"></script>
+  <script src="./src/core/shared/sort.js"></script>
+  <script src="./src/core/reservations/rules.js"></script>
+  <script src="./src/core/reservations/slots.js"></script>
+  <script src="./src/core/reservations/overlap.js"></script>
+  <script src="./src/core/reservations/factory.js"></script>
+  <script src="./src/core/reservations/filters.js"></script>
+  <script src="./src/core/reservations/status.js"></script>
+  <script src="./src/core/storage/reservationsStore.js"></script>
+  <script src="./src/core/storage/sessionStore.js"></script>
+  <script src="./src/core/seed/seedReservations.js"></script>
   <script src="./src/admin.js"></script>
 </body>
 </html>
