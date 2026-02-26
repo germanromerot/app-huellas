@@ -44,20 +44,32 @@ a{ color: inherit; text-decoration: none; }
 .muted{ color: var(--muted); }
 .tiny{ font-size: 12px; }
 .hero-banner{
-  padding: 42px 0 24px;
+  /* Full-bleed: que cubra todo el ancho de la pantalla */
+  width: 100%;
+  padding: 0;
 }
 .banner-grid{
   display: grid;
   position: relative;
   grid-template-columns: 1fr;
   align-items: center;
-  min-height: clamp(320px, 46vw, 480px);
-  padding: clamp(18px, 2.4vw, 28px);
+  /* Menos alto que pantalla completa */
+  min-height: clamp(260px, 40svh, 420px);
+  padding-block: clamp(22px, 4svh, 44px);
   background: transparent;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius2) + 6px);
   box-shadow: var(--shadow);
   overflow: hidden;
+  /* Full-bleed: pegado a los bordes */
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  justify-items: center;
+  text-align: center;
+  padding-inline: 1rem;
 }
 
 /* Imagen full-bleed */
@@ -78,16 +90,13 @@ a{ color: inherit; text-decoration: none; }
   object-position: center;
 }
 
-/* Overlay pastel (más parejo) */
+/* Overlay para legibilidad (oscurece un poco la imagen) */
 .banner-grid::before{
   content: "";
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(251,251,255,.92) 0%, rgba(251,251,255,.70) 48%, rgba(251,251,255,.20) 100%),
-    radial-gradient(900px 420px at 25% 20%, rgba(217,242,238,.55), transparent 60%),
-    radial-gradient(700px 360px at 10% 85%, rgba(246,214,230,.40), transparent 60%);
-  pointer-events: none;
+    linear-gradient(0deg, rgba(0,0,0,.40), rgba(0,0,0,.40));
 }
 
 .banner-copy{
@@ -96,14 +105,23 @@ a{ color: inherit; text-decoration: none; }
   gap: 10px;
   position: relative;
   z-index: 1;
-  width: min(520px, 100%);
-  padding: 18px;
-  background: rgba(255,255,255,.70);
-  border: 1px solid rgba(31,34,48,.08);
-  border-radius: var(--radius2);
-  box-shadow: 0 12px 30px rgba(31,34,48,.10);
-  backdrop-filter: blur(6px);
+  width: min(760px, 100%);
+  margin: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
+  max-width: 760px;
 }
+
+/* Sombra para el texto */
+.banner-title,
+.banner-text{
+  text-shadow: 0 3px 22px rgba(0,0,0,.55);
+  color: #fff;
+}
+
 .banner-kicker{
   margin: 0;
   font-weight: 700;
@@ -118,17 +136,20 @@ a{ color: inherit; text-decoration: none; }
 }
 .banner-text{
   margin: 0;
-  font-size: 16px;
+  font-size: clamp(18px, 2.2vw, 26px);
+  line-height: 1.25;
+  font-weight: 600;
+  color: rgba(255,255,255,.88);
 }
 .btn-cta{
-  align-self: flex-start;
+  align-self: center;
   padding: 12px 20px;
   font-size: 15px;
   color: var(--ink);
   text-shadow: none;
   transform: translateZ(0);
-  background: linear-gradient(135deg, var(--p1), var(--p3));
-  border: 1px solid rgba(31,34,48,.15);
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.32);
   box-shadow: 0 12px 28px rgba(31,34,48,.16);
   position: relative;
   overflow: hidden;
@@ -630,9 +651,9 @@ input:focus, select:focus{
   .grid{ grid-template-columns: 1fr 1fr; }
   .layout-2col{ grid-template-columns: 1fr; }
 
-  .hero-banner{ padding: 28px 0 18px; }
-  .banner-grid{ min-height: 480px; }
-  .banner-copy{ padding: 16px; }
+  .hero-banner{ padding: 0; }
+  .banner-grid{ min-height: clamp(220px, 34svh, 320px); padding-block: clamp(18px, 3.2svh, 34px); }
+  .banner-copy{ padding: 0; }
 }
 
 @media (max-width: 740px){
