@@ -14,7 +14,7 @@
 <body>
   <header class="site-header admin-header">
     <div class="container header-row">
-      <a class="brand" href="#top" aria-label="Ir al inicio">
+      <a class="brand" href="#" aria-label="Ir al inicio">
         <!-- <span class="brand-dot" aria-hidden="true"></span> -->
         <img src="img/logo.png" alt="logo" class="logo">
         <span>Huellas</span>
@@ -101,12 +101,8 @@
 
           <!-- FILTRO POR FECHA -->
            <div class="form-group">
-             <label for="dateFilter">Fechas</label>
-              <select id="dateFilter" aria-label="Filtrar por fecha">
-                <option value="all">Todas</option>
-                <option value="future">Futuras</option>
-                <option value="past">Pasadas</option>
-              </select>
+             <label for="dateFilter">Fecha</label>
+              <input type="date" id="dateFilter" aria-label="Filtrar por fecha" />
            </div>
 
            <div class="form-group">

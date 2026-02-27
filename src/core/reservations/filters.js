@@ -22,17 +22,23 @@
     const items = Array.isArray(reservations) ? reservations : [];
     const opts = criteria || {};
     const service = opts.service || "all";
-    const dateFilter = opts.dateFilter || "all";
+    const dateFilter = String(opts.dateFilter || "").trim();
     const query = String(opts.query || "").trim().toLowerCase();
     const now = opts.now instanceof Date ? opts.now : new Date();
 
     return items.filter((r) => {
       const okService = service === "all" ? true : r.proType === service;
       const start = parseISOKey(r.startISO);
+      const startDateKey = Number.isNaN(start.getTime())
+        ? ""
+        : `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(
+            start.getDate()
+          ).padStart(2, "0")}`;
 
       let okDate = true;
       if (dateFilter === "future") okDate = start >= now;
-      if (dateFilter === "past") okDate = start < now;
+      else if (dateFilter === "past") okDate = start < now;
+      else if (dateFilter && /^\d{4}-\d{2}-\d{2}$/.test(dateFilter)) okDate = startDateKey === dateFilter;
 
       if (!query) return okService && okDate;
 
