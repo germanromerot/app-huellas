@@ -226,8 +226,12 @@ body{
 }
 
 .meta-item strong{
-  color: var(--ink);
-  font-weight: 900;
+  color: #5a5a5a;
+  font-weight: 500;
+}
+.meta-item span {
+  color: #5a5a5a;
+  font-weight: 800;
 }
 
 .reservation-actions{
