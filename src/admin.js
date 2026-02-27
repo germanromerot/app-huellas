@@ -148,10 +148,41 @@
   function getFilterCriteria() {
     return {
       service: serviceFilter ? serviceFilter.value : "all",
-      dateFilter: dateFilter ? dateFilter.value : "all",
+      dateFilter: dateFilter ? dateFilter.value : "",
       query: searchInput ? searchInput.value : "",
       now: new Date(),
     };
+  }
+
+  // Inicializa el filtro de fecha con el dia actual.
+  function initDateFilter() {
+    if (!dateFilter) return;
+    dateFilter.value = datetime.getDateOnlyKey(new Date());
+  }
+
+  // Formatea YYYY-MM-DD a DD-MMM-YYYY para mensajes del panel.
+  function formatDateForEmptyState(dateKey) {
+    const match = String(dateKey || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return "";
+
+    const [, year, month, day] = match;
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const monthIndex = Number(month) - 1;
+    const monthLabel = monthNames[monthIndex] || month;
+    return `${day}-${monthLabel}-${year}`;
   }
 
   // Renderiza la lista filtrada de reservas.
@@ -164,7 +195,14 @@
     const filtered = filters.filterReservations(allReservations, getFilterCriteria());
     if (filtered.length === 0) {
       listEl.innerHTML = "";
-      if (emptyState) emptyState.hidden = allReservations.length !== 0;
+      if (emptyState) {
+        const selectedDate = dateFilter ? dateFilter.value : "";
+        const formattedDate = formatDateForEmptyState(selectedDate);
+        emptyState.textContent = formattedDate
+          ? `Sin reservas agendadas para el día ${formattedDate}.`
+          : "Sin reservas agendadas para la fecha seleccionada.";
+        emptyState.hidden = false;
+      }
       return;
     }
 
@@ -268,6 +306,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     initYear();
+    initDateFilter();
     initLogin();
     initLogout();
     bindUI();

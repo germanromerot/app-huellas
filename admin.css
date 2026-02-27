@@ -139,6 +139,7 @@ body{
 }
 
 .admin-filters select,
+.admin-filters input[type="date"],
 .admin-filters input[type="search"]{
   border: 1px solid rgba(31,34,48,.15);
   border-radius: 999px;
@@ -253,7 +254,14 @@ body{
 /* Empty state */
 .admin-empty{
   margin: 12px 0 0;
-  text-align:center;
+  text-align: center;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(168, 122, 0, 0.28);
+  background: linear-gradient(135deg, rgba(255, 248, 220, 0.9), rgba(255, 255, 255, 0.95));
+  color: #6b4f00;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(31, 34, 48, 0.08);
 }
 
 /* Footer */
