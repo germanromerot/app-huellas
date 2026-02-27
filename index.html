@@ -192,7 +192,7 @@
             </fieldset>
 
             <div class="form-actions">
-              <button class="btn" type="submit">Confirmar reserva</button>
+              <button class="btn" type="submit">Reservar</button>
               <p class="form-hint muted" id="formHint" role="status" aria-live="polite"></p>
             </div>
           </form>
@@ -269,15 +269,34 @@
       <small class="muted">© <span id="year"></span> Huellas · Vet & Estética</small>
     </div>
   </footer>
-  <div class="modal" id="successModal" aria-hidden="true">
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-card">
+
+  <!-- Modal de confirmación previa -->
+  <div class="modal" id="confirmModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-confirm></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
       <div class="modal-head">
-        <h3>Reserva confirmada ✅</h3>
-        <button class="icon-btn" type="button" data-close>✕</button>
+        <h3 id="confirmTitle">Confirmar reserva</h3>
+        <button class="icon-btn" type="button" data-close-confirm aria-label="Cerrar">✕</button>
       </div>
       <div class="modal-body">
-        <p id="successMessage"></p>
+        <div id="confirmDetails" class="confirm-details"></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" type="button" id="confirmCancelBtn">Cancelar</button>
+          <button class="btn" type="button" id="confirmOkBtn">Confirmar reserva</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="successModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="modal-head">
+        <h3 id="successTitle">Reserva confirmada ✅</h3>
+        <button class="icon-btn" type="button" data-close aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="successDetails" class="confirm-details"></div>
         <div class="modal-actions">
           <button class="btn" type="button" data-close>Aceptar</button>
         </div>

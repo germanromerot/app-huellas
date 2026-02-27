@@ -645,6 +645,15 @@ input:focus, select:focus{
   cursor:pointer;
 }
 
+/* Horarios ocupados en el selector */
+#timeInput option.is-occupied {
+  color: #9aa0a6;
+}
+
+#timeInput option:disabled {
+  color: #9aa0a6;
+}
+
 @media (max-width: 900px){
   .cards-row{ grid-template-columns: 1fr; }
   .services-grid{ grid-template-columns: 1fr 1fr; }
@@ -711,5 +720,92 @@ input:focus, select:focus{
   width: 20px;
   height: 20px;
   fill: var(--ink);
+}
+
+/* Modal confirmación: detalles con lectura más profesional */
+.confirm-details{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.confirm-row{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.72);
+  border-radius: 14px;
+}
+
+.confirm-label{
+  font-size: 12px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.confirm-value{
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* CONFIRMACIÓN (previo): sin verde, en filas separadas */
+#confirmModal .confirm-details{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+#confirmModal .confirm-row{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.72);
+  border-radius: 14px;
+}
+
+@media (max-width: 520px){
+  #confirmModal .confirm-row{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ÉXITO (confirmada): compacto en un solo bloque con fondo verde suave */
+#successModal .confirm-details{
+  display: block;
+  padding: 14px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(46, 125, 92, .22);
+  background: rgba(46, 125, 92, .10);
+}
+
+#successModal .confirm-row{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+#successModal .confirm-row + .confirm-row{
+  border-top: 1px dashed rgba(46, 125, 92, .20);
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
+@media (max-width: 520px){
+  #successModal .confirm-row{
+    grid-template-columns: 1fr;
+  }
 }
 

@@ -245,11 +245,66 @@
     const dateInput = $("#dateInput");
     const timeInput = $("#timeInput");
     const hint = $("#formHint");
+
+    const confirmModal = $("#confirmModal");
+    const confirmDetails = $("#confirmDetails");
+    const confirmOkBtn = $("#confirmOkBtn");
+    const confirmCancelBtn = $("#confirmCancelBtn");
+    const confirmCloseBtns = $$("[data-close-confirm]");
+
     const successModal = $("#successModal");
     const successMessage = $("#successMessage");
+    const successDetails = $("#successDetails");
     const successCloseBtns = $$("#successModal [data-close]");
 
     if (!serviceSelect || !proSelect || !dateInput || !timeInput) return;
+
+    let pendingReservation = null;
+
+    function openConfirmModal() {
+      if (!confirmModal) return;
+      confirmModal.classList.add("is-open");
+      confirmModal.setAttribute("aria-hidden", "false");
+
+      // focus
+      if (confirmOkBtn) confirmOkBtn.focus();
+    }
+
+    function closeConfirmModal() {
+      if (!confirmModal) return;
+      confirmModal.classList.remove("is-open");
+      confirmModal.setAttribute("aria-hidden", "true");
+    }
+
+    // Renderiza filas de detalle en un contenedor.
+    function renderReservationDetails(targetEl, reservation, service, professional, start) {
+      if (!targetEl) return;
+
+      const rows = [
+        { label: "Servicio", value: reservation.serviceLabel || service?.label || "-" },
+        { label: "Profesional", value: reservation.proName || professional?.name || "-" },
+        { label: "Fecha y hora", value: datetime.formatNice(start) },
+        { label: "Duración", value: `${service?.durationMin ?? reservation.durationMin ?? "-"} min` },
+        { label: "Dueño", value: reservation.ownerName || "-" },
+        { label: "Mascota", value: `${reservation.petName || "-"} (${reservation.petType || "-"})` },
+        { label: "Teléfono", value: reservation.phone || "-" },
+      ];
+
+      if (reservation.email) rows.push({ label: "Email", value: reservation.email });
+
+      targetEl.innerHTML = rows
+        .map(
+          (r) =>
+            `<div class=\"confirm-row\"><div class=\"confirm-label\">${text.escapeHtml(
+              r.label
+            )}</div><div class=\"confirm-value\">${text.escapeHtml(String(r.value))}</div></div>`
+        )
+        .join("");
+    }
+
+    function setConfirmDetails(reservation, service, professional, start) {
+      renderReservationDetails(confirmDetails, reservation, service, professional, start);
+    }
 
     // Muestra un mensaje de ayuda neutral en el formulario.
     function setHint(msg) {
@@ -267,8 +322,11 @@
 
     // Abre el modal de exito con un mensaje de resumen.
     function openSuccessModal(msg) {
-      if (!successModal || !successMessage) return;
-      successMessage.textContent = msg;
+      if (!successModal) return;
+
+      // Mantener compatibilidad si existe successMessage en versiones viejas
+      if (successMessage) successMessage.textContent = msg || "";
+
       successModal.classList.add("is-open");
       successModal.setAttribute("aria-hidden", "false");
     }
@@ -337,13 +395,18 @@
           status: "active",
         };
 
-        const disabled = overlap.hasOverlap(
+        const isOccupied = overlap.hasOverlap(
           existing,
           candidate,
           getServiceDurationById,
           constants.DEFAULT_SLOT_MIN
         );
-        return `<option value="${start}"${disabled ? " disabled" : ""}>${label}</option>`;
+
+        const occupiedSuffix = isOccupied ? " (Ocupado)" : "";
+        const occupiedClass = isOccupied ? " class=\"is-occupied\"" : "";
+        const disabledAttr = isOccupied ? " disabled" : "";
+
+        return `<option value="${start}"${occupiedClass}${disabledAttr}>${label}${occupiedSuffix}</option>`;
       });
 
       timeInput.innerHTML = `<option value="">Seleccionar...</option>` + options.join("");
@@ -369,16 +432,76 @@
         if (e.target && e.target.classList.contains("modal-backdrop")) closeSuccessModal();
       });
     }
+
+    // close handlers confirm modal
+    confirmCloseBtns.forEach((btn) => btn.addEventListener("click", closeConfirmModal));
+    if (confirmModal) {
+      confirmModal.addEventListener("click", (e) => {
+        if (e.target && e.target.classList.contains("modal-backdrop")) closeConfirmModal();
+      });
+    }
+
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSuccessModal();
+      if (e.key === "Escape") {
+        closeSuccessModal();
+        closeConfirmModal();
+      }
     });
 
+    if (confirmCancelBtn) {
+      confirmCancelBtn.addEventListener("click", () => {
+        pendingReservation = null;
+        closeConfirmModal();
+      });
+    }
+
+    if (confirmOkBtn) {
+      confirmOkBtn.addEventListener("click", () => {
+        if (!pendingReservation) {
+          closeConfirmModal();
+          return;
+        }
+
+        const existing = reservationsStore.loadReservations();
+        const updated = sort.sortReservationsByStartISO([...existing, pendingReservation]);
+        reservationsStore.saveReservations(updated);
+
+        const start = datetime.parseISOKey(pendingReservation.startISO);
+
+        const summary =
+          pendingReservation.serviceLabel +
+          " con " +
+          pendingReservation.proName +
+          " - " +
+          datetime.formatNice(start);
+
+        // Pintar detalles en el modal de éxito con el mismo formato que confirmación
+        renderReservationDetails(
+          successDetails,
+          pendingReservation,
+          catalog.SERVICES_BY_ID?.[pendingReservation.serviceId],
+          catalog.PROFESSIONALS_BY_ID?.[pendingReservation.proId],
+          start
+        );
+
+        pendingReservation = null;
+        closeConfirmModal();
+        openSuccessModal(summary);
+
+        form.reset();
+        renderPros("all");
+        renderTimeSlots();
+      });
+    }
+
+    // Al cambiar el servicio, actualizar profesionales y horarios.
     serviceSelect.addEventListener("change", () => {
       const selectedService = catalog.SERVICES_BY_ID?.[serviceSelect.value];
       renderPros(selectedService?.proType || "all");
       renderTimeSlots();
     });
 
+    // Al seleccionar un profesional, actualizar horarios.
     proSelect.addEventListener("change", () => {
       if (proSelect.value && !serviceSelect.value) {
         const professional = catalog.PROFESSIONALS_BY_ID?.[proSelect.value];
@@ -392,8 +515,10 @@
       renderTimeSlots();
     });
 
+    // Al cambiar la fecha, actualizar horarios.
     dateInput.addEventListener("change", renderTimeSlots);
 
+    // Al enviar el formulario, validar y guardar reserva.
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       setHint("");
@@ -483,20 +608,10 @@
         return;
       }
 
-      const updated = sort.sortReservationsByStartISO([...existing, newReservation]);
-      reservationsStore.saveReservations(updated);
-
-      const summary =
-        newReservation.serviceLabel +
-        " con " +
-        newReservation.proName +
-        " - " +
-        datetime.formatNice(start);
-      openSuccessModal(summary);
-
-      form.reset();
-      renderPros("all");
-      renderTimeSlots();
+      // No guardar todavía: mostrar confirmación previa
+      pendingReservation = newReservation;
+      setConfirmDetails(newReservation, service, professional, start);
+      openConfirmModal();
     });
 
     renderPros("all");
