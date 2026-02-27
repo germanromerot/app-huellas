@@ -320,6 +320,30 @@
       hint.style.color = "#8b1e3f";
     }
 
+    // Normaliza y valida un telefono uruguayo para guardarlo con formato 09N NNN NNN.
+    function normalizeAndFormatPhone(rawPhone) {
+      let normalized = String(rawPhone || "").replace(/\s+/g, "");
+
+      if (normalized.startsWith("+598")) {
+        normalized = `0${normalized.slice(4)}`;
+      } else if (normalized.startsWith("598")) {
+        normalized = `0${normalized.slice(3)}`;
+      }
+
+      if (/^9\d{7}$/.test(normalized)) {
+        normalized = `0${normalized}`;
+      }
+
+      if (!/^\d{9}$/.test(normalized) || !normalized.startsWith("09")) {
+        return { ok: false, value: "" };
+      }
+
+      return {
+        ok: true,
+        value: `${normalized.slice(0, 3)} ${normalized.slice(3, 6)} ${normalized.slice(6, 9)}`,
+      };
+    }
+
     // Abre el modal de exito con un mensaje de resumen.
     function openSuccessModal(msg) {
       if (!successModal) return;
@@ -524,6 +548,7 @@
       setHint("");
 
       const fd = new FormData(form);
+      const phoneInput = $("input[name='phone']", form);
       const ownerName = String(fd.get("ownerName") || "").trim();
       const petName = String(fd.get("petName") || "").trim();
       const petType = String(fd.get("petType") || "").trim();
@@ -531,8 +556,10 @@
       const proId = String(fd.get("proId") || "").trim();
       const dateStr = String(fd.get("date") || "").trim();
       const timeStr = String(fd.get("time") || "").trim();
-      const phone = String(fd.get("phone") || "").trim();
+      const phoneRaw = String(fd.get("phone") || "").trim();
       const email = String(fd.get("email") || "").trim();
+      const normalizedPhone = normalizeAndFormatPhone(phoneRaw);
+      const phone = normalizedPhone.value;
 
       if (
         !rules.hasRequiredBookingFields({
@@ -543,11 +570,20 @@
           proId,
           dateStr,
           timeStr,
-          phone,
+          phone: phoneRaw,
         })
       ) {
         hardError("Por favor completa todos los campos obligatorios (*).");
         return;
+      }
+
+      if (!normalizedPhone.ok) {
+        hardError("El teléfono ingresado debe tener un formato de celular uruguayo válido.");
+        return;
+      }
+
+      if (phoneInput) {
+        phoneInput.value = phone;
       }
 
       if (!rules.isPetTypeAllowed(petType, constants.PET_TYPES)) {
