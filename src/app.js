@@ -701,6 +701,38 @@
     if (y) y.textContent = String(new Date().getFullYear());
   }
 
+  //Tarjetas de servicio
+function initServiceCardsToBooking() {
+  const cards = document.querySelectorAll(".service-card[data-service-id]");
+  const reservarSection = document.querySelector("#reservar");
+  const serviceSelect = document.querySelector("#serviceSelect");
+
+  if (!cards.length || !reservarSection || !serviceSelect) return;
+
+  cards.forEach((card) => {
+    card.style.cursor = "pointer";
+
+    card.addEventListener("click", () => {
+      const serviceId = card.dataset.serviceId;
+      if (!serviceId) return;
+
+      // 1) Scroll al formulario
+      reservarSection.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // 2) Seleccionar el servicio en el formulario
+      serviceSelect.value = serviceId;
+
+      // Disparar change para que se actualicen profesionales y horarios
+      serviceSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+      // (opcional) enfoque al select para que se note el cambio
+      serviceSelect.focus({ preventScroll: true });
+    });
+  });
+}
+
+
+
   document.addEventListener("DOMContentLoaded", () => {
     try {
       seedReservations.ensureSeedData();
@@ -714,5 +746,6 @@
     initProfessionals();
     initBookingForm();
     initOptionalLogin();
+    initServiceCardsToBooking();
   });
 })();
