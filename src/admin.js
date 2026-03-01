@@ -185,6 +185,33 @@
     return `${day}-${monthLabel}-${year}`;
   }
 
+  // Convierte el filtro de servicio en una etiqueta legible.
+  function serviceFilterLabel(service) {
+    if (service === "vet") return "Veterinaria";
+    if (service === "groom") return "Estetica/Bano";
+    return "Todos";
+  }
+
+  // Construye el mensaje de estado vacio segun filtros activos.
+  function buildEmptyStateMessage(criteria) {
+    const dateLabel = formatDateForEmptyState(criteria.dateFilter);
+    const hasService = criteria.service && criteria.service !== "all";
+    const query = String(criteria.query || "").trim();
+    const hasQuery = query.length > 0;
+
+    if (dateLabel && !hasService && !hasQuery) {
+      return `Sin reservas agendadas para el dia ${dateLabel}.`;
+    }
+
+    const parts = [];
+    if (dateLabel) parts.push(`Fecha: ${dateLabel}`);
+    if (hasService) parts.push(`Servicio: ${serviceFilterLabel(criteria.service)}`);
+    if (hasQuery) parts.push(`Busqueda: "${query}"`);
+
+    if (parts.length === 0) return "No se encontraron reservas.";
+    return `No se encontraron reservas para los filtros seleccionados. ${parts.join(" | ")}`;
+  }
+
   // Renderiza la lista filtrada de reservas.
   function renderList() {
     if (!listEl) return;
@@ -192,15 +219,12 @@
     const allReservations = sort.sortReservationsByStartISO(reservationsStore.loadReservations());
     updateCounters(allReservations);
 
-    const filtered = filters.filterReservations(allReservations, getFilterCriteria());
+    const criteria = getFilterCriteria();
+    const filtered = filters.filterReservations(allReservations, criteria);
     if (filtered.length === 0) {
       listEl.innerHTML = "";
       if (emptyState) {
-        const selectedDate = dateFilter ? dateFilter.value : "";
-        const formattedDate = formatDateForEmptyState(selectedDate);
-        emptyState.textContent = formattedDate
-          ? `Sin reservas agendadas para el día ${formattedDate}.`
-          : "Sin reservas agendadas para la fecha seleccionada.";
+        emptyState.textContent = buildEmptyStateMessage(criteria);
         emptyState.hidden = false;
       }
       return;
@@ -319,3 +343,4 @@
     }
   });
 })();
+

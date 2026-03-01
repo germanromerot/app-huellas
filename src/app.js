@@ -62,6 +62,21 @@
     return catalog.SERVICES_BY_ID?.[serviceId]?.durationMin || constants.DEFAULT_SLOT_MIN;
   }
 
+  // Sincroniza el offset de anclas con la altura real del header sticky.
+  function initAnchorScrollOffset() {
+    const root = document.documentElement;
+    const header = $(".site-header");
+    if (!root || !header) return;
+
+    function setOffset() {
+      const offset = Math.round(header.offsetHeight / 2 + 8);
+      root.style.setProperty("--anchor-offset", `${offset}px`);
+    }
+
+    setOffset();
+    window.addEventListener("resize", setOffset);
+  }
+
   // Inicializa el menu mobile y su comportamiento de cierre.
   function initNav() {
     const navToggle = $("#navToggle");
@@ -85,6 +100,70 @@
       nav.classList.remove("is-open");
       navToggle.setAttribute("aria-expanded", "false");
     });
+  }
+
+  // Marca el link del menu correspondiente a la seccion visible.
+  function initNavScrollSpy() {
+    const navLinks = $$("#nav a[href^='#']");
+    if (navLinks.length === 0) return;
+
+    const tracked = navLinks
+      .map((link) => {
+        const id = String(link.getAttribute("href") || "").replace(/^#/, "");
+        const section = id ? document.getElementById(id) : null;
+        return { link, id, section };
+      })
+      .filter((item) => item.section);
+
+    if (tracked.length === 0) return;
+
+    function setActiveLink(activeId) {
+      tracked.forEach((item) => {
+        const isActive = item.id === activeId;
+        item.link.classList.toggle("is-active", isActive);
+        if (isActive) item.link.setAttribute("aria-current", "location");
+        else item.link.removeAttribute("aria-current");
+      });
+    }
+
+    function getOffsetTop() {
+      const cssOffset = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--anchor-offset")
+      );
+      if (Number.isFinite(cssOffset)) return cssOffset;
+      const header = $(".site-header");
+      const headerHeight = header ? header.offsetHeight : 0;
+      return Math.round(headerHeight / 2 + 8);
+    }
+
+    function updateActiveByScroll() {
+      const offset = getOffsetTop();
+      const activationTolerance = 96;
+      let activeId = "";
+
+      tracked.forEach((item) => {
+        const rect = item.section.getBoundingClientRect();
+        if (rect.top - (offset + activationTolerance) <= 0) activeId = item.id;
+      });
+
+      const nearBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      if (nearBottom) activeId = tracked[tracked.length - 1].id;
+
+      setActiveLink(activeId);
+    }
+
+    tracked.forEach((item) => {
+      item.link.addEventListener("click", () => {
+        setActiveLink(item.id);
+        window.requestAnimationFrame(updateActiveByScroll);
+      });
+    });
+
+    window.addEventListener("scroll", updateActiveByScroll, { passive: true });
+    window.addEventListener("resize", updateActiveByScroll);
+    window.addEventListener("hashchange", updateActiveByScroll);
+    updateActiveByScroll();
   }
 
   // Inicializa el carrusel principal con navegacion y autoplay.
@@ -741,7 +820,9 @@ function initServiceCardsToBooking() {
     }
 
     initYear();
+    initAnchorScrollOffset();
     initNav();
+    initNavScrollSpy();
     initCarousel();
     initProfessionals();
     initBookingForm();
